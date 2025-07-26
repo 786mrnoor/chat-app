@@ -1,0 +1,10 @@
+**/.git
+**/node_modules
+**/dist
+**/build
+**/.vscode
+**/public
+index.html
+package-lock.json
+package.json
+.env

@@ -1,0 +1,99 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #00acb4;
+  --color-secondary: #058187;
+
+  --top-header-height: 4rem;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @apply bg-white text-black;
+}
+
+@utility form-control {
+  @apply mt-1 w-full rounded border border-slate-300 bg-slate-50 px-2 py-1 outline-none;
+
+  &:focus {
+    @apply focus:border-primary;
+  }
+
+  &:user-valid {
+    @apply border-primary;
+  }
+
+  &:user-invalid {
+    @apply border-red-500;
+  }
+}
+
+@utility form-button {
+  outline: transparent;
+  @apply mt-2 cursor-pointer rounded bg-primary px-4 py-1 text-lg leading-relaxed font-bold tracking-wide text-white;
+
+  &:hover {
+    @apply bg-secondary;
+  }
+
+  &:focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-primary;
+  }
+
+  &:disabled {
+    @apply cursor-auto bg-slate-400;
+  }
+}
+
+@utility nav-link {
+  @apply flex h-12 w-12 cursor-pointer items-center justify-center rounded hover:bg-neutral-200;
+
+  &.active {
+    @apply bg-neutral-200;
+  }
+}
+
+.scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #939393 transparent;
+}
+.scrollbar::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+/* .scrollbar::-webkit-scrollbar-track {
+  @apply bg-slate-300;
+} */
+
+.scrollbar::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-neutral-400;
+}
+
+.gradient {
+  background: linear-gradient(-45deg, #e1e1e1, #939393);
+  background-size: 400% 400%;
+  animation: gradient 2s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

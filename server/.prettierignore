@@ -1,0 +1,9 @@
+**/.git
+**/node_modules
+**/dist
+**/build
+**/.vscode
+**/public
+package-lock.json
+package.json
+.env
