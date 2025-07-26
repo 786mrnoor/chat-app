@@ -2,7 +2,7 @@
 
 A full-stack real-time chat application built with **React**, **Express**, **MongoDB**, **Socket.IO** and **Cloudinary**.
 
-<!-- 🚀 **Live Demo:** [chat-app-demo]() -->
+🚀 **Live Demo:** [chat-app-demo](https://chat-app-s1u6.onrender.com/)
 
 ---
 
