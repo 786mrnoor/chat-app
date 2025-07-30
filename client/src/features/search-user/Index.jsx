@@ -55,7 +55,7 @@ const SearchUser = ({ onClose }) => {
     onClose();
   }
   return (
-    <div className='absolute top-0 bottom-0 left-full z-2 flex w-[calc(100vw-100%)] flex-col bg-white sm:w-[22rem] lg:w-[24rem]'>
+    <div className='fixed top-0 bottom-0 left-0 z-2 flex w-full flex-col border-r border-neutral-300 bg-white md:w-[24rem] lg:w-[28rem]'>
       {/**back button */}
       <button
         onClick={onClose}

@@ -12,7 +12,7 @@ export default function Conversations() {
   );
 
   return (
-    <div className='grid h-full content-start overflow-auto border-r border-neutral-300 bg-white'>
+    <div className='grid h-full w-full content-start overflow-auto border-r border-neutral-300 bg-white'>
       <header className='flex h-[var(--top-header-height)] items-center border-b border-neutral-300'>
         <h2 className='p-4 text-xl font-bold text-slate-800'>Message</h2>
       </header>

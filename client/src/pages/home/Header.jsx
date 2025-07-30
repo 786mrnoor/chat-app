@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { useState } from 'react';
 import { BiLogOut } from 'react-icons/bi';
 import { FaUserPlus } from 'react-icons/fa';
 import { IoChatbubbleEllipses } from 'react-icons/io5';
@@ -8,11 +7,9 @@ import { NavLink, Outlet, useNavigate } from 'react-router';
 
 import Avatar from '@/components/Avatar';
 
-import SearchUser from '@/features/search-user/Index';
-
-export default function Header() {
+export default function Header({ className, onOpenSearchUser }) {
   const user = useSelector((state) => state.user);
-  const [openSearchUser, setOpenSearchUser] = useState(false);
+
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -24,12 +21,14 @@ export default function Header() {
     }
   }
   return (
-    <header className='relative flex h-full flex-col items-center gap-y-2 border-r border-neutral-300 bg-neutral-100 py-5'>
-      <NavLink to='/' className='nav-link' title='chat'>
+    <header
+      className={`relative flex h-full flex-col items-center gap-y-2 border-r border-neutral-300 bg-neutral-100 py-5 ${className}`}
+    >
+      <button className='active nav-link'>
         <IoChatbubbleEllipses size={20} />
-      </NavLink>
+      </button>
 
-      <button title='add friend' onClick={() => setOpenSearchUser(true)} className='nav-link'>
+      <button onClick={onOpenSearchUser} className='nav-link'>
         <FaUserPlus size={20} />
       </button>
 
@@ -44,11 +43,6 @@ export default function Header() {
       </button>
 
       <Outlet />
-
-      {
-        //search user
-        openSearchUser && <SearchUser onClose={() => setOpenSearchUser(false)} />
-      }
     </header>
   );
 }
