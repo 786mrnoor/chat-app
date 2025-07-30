@@ -6,13 +6,13 @@ import MessageStatusBadge from '@/components/MessageStatusBadge';
 const MessageCard = memo(function MessageCard({ message, user }) {
   return (
     <div
-      className={`w-fit max-w-75/100 rounded p-1 py-1 shadow-xs has-[img,video]:max-w-82 lg:max-w-60/100 ${user?._id === message?.senderId ? 'ml-auto bg-teal-100' : 'bg-white'}`}
+      className={`w-fit max-w-75/100 rounded p-1 py-1 shadow-xs has-[img,video]:max-w-[min(75%,20.5rem)] lg:max-w-60/100 ${user?._id === message?.senderId ? 'ml-auto bg-teal-100' : 'bg-white'}`}
     >
       <div className='relative bg-white'>
         {message?.type === 'image' && (
           <img
             src={message?.media?.url}
-            className='gradient h-auto max-w-80 min-w-full'
+            className='gradient h-auto min-w-full'
             alt={message?.content}
             loading='lazy'
             height={message?.media?.height}

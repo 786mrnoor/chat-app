@@ -12,20 +12,20 @@ export default function Conversations() {
   );
 
   return (
-    <section className='bg-white border-r border-neutral-300 grid content-start overflow-auto'>
-      <header className='h-[var(--top-header-height)] flex items-center border-b border-neutral-300'>
-        <h2 className='text-xl font-bold p-4 text-slate-800'>Message</h2>
+    <div className='grid h-full content-start overflow-auto border-r border-neutral-300 bg-white'>
+      <header className='flex h-[var(--top-header-height)] items-center border-b border-neutral-300'>
+        <h2 className='p-4 text-xl font-bold text-slate-800'>Message</h2>
       </header>
 
-      <main className='overflow-x-hidden overflow-y-auto scrollbar pt-4 px-2'>
+      <main className='scrollbar overflow-x-hidden overflow-y-auto px-2 pt-4'>
         {
           // if there is no conversation
           sortedConversations?.length === 0 && (
             <div className='mt-12'>
-              <div className='flex justify-center items-center my-4 text-slate-500'>
+              <div className='my-4 flex items-center justify-center text-slate-500'>
                 <FiArrowUpLeft size={50} />
               </div>
-              <p className='text-lg text-center text-slate-400'>
+              <p className='text-center text-lg text-slate-400'>
                 Explore users to start a conversation with.
               </p>
             </div>
@@ -46,6 +46,6 @@ export default function Conversations() {
           );
         })}
       </main>
-    </section>
+    </div>
   );
 }
