@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useLocation } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
 
 import MessagePage from '@/features/message/Index';
 import SearchUser from '@/features/search-user/Index';
@@ -13,8 +13,8 @@ import { resetState } from '@/store/chat-slice';
 
 import Banner from './Banner';
 import Conversations from './Conversations';
-import Header from './Header';
-import MobileHeader from './MobileHeader';
+import MobileNav from './MobileNav';
+import Nav from './Nav';
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -37,7 +37,7 @@ export default function Home() {
     <main
       className={`scrollbar grid h-[calc(100dvh-4rem)] grid-cols-1 grid-rows-1 overflow-auto md:h-dvh md:grid-cols-[auto_auto_1fr] ${activeConversation ? 'max-md:h-dvh' : ''}`}
     >
-      <Header className='w-[4rem] max-md:hidden' onOpenSearchUser={() => setOpenSearchUser(true)} />
+      <Nav className='w-[4rem] max-md:hidden' onOpenSearchUser={() => setOpenSearchUser(true)} />
 
       <section
         className={`w-full md:w-[20rem] lg:w-[24rem] ${activeConversation ? 'max-md:hidden' : ''}`}
@@ -51,7 +51,11 @@ export default function Home() {
         {basePath && !activeConversation && <Banner />}
       </section>
 
-      <MobileHeader className={`md:hidden ${activeConversation ? 'hidden' : ''}`} />
+      <MobileNav
+        className={`md:hidden ${activeConversation ? 'hidden' : ''}`}
+        onOpenSearchUser={() => setOpenSearchUser(true)}
+      />
+      <Outlet />
 
       {
         //search user

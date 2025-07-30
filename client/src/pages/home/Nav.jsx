@@ -3,7 +3,7 @@ import { BiLogOut } from 'react-icons/bi';
 import { FaUserPlus } from 'react-icons/fa';
 import { IoChatbubbleEllipses } from 'react-icons/io5';
 import { useSelector } from 'react-redux';
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { NavLink, useNavigate } from 'react-router';
 
 import Avatar from '@/components/Avatar';
 
@@ -41,8 +41,6 @@ export default function Header({ className, onOpenSearchUser }) {
           <BiLogOut size={20} />
         </span>
       </button>
-
-      <Outlet />
     </header>
   );
 }
