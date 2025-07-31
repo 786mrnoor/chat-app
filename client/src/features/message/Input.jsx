@@ -6,6 +6,7 @@ import useSendAttachments from '@/hooks/useSendAttachments';
 import useSendMessage from '@/hooks/useSendMessage';
 import useTextAreaAutoResize from '@/hooks/useTextAreaAutoResize';
 
+import useTypingHandler from '../../hooks/useTypingHandler';
 import AttachmentMenu from '../attachments/AttachmentMenu';
 import ImageUpload from '../attachments/ImageUpload';
 
@@ -23,8 +24,10 @@ export default function Input() {
   const sendMessage = useSendMessage();
   const sendAttachments = useSendAttachments();
 
+  const typingHandler = useTypingHandler();
   function handleOnChange(e) {
     const { value } = e.target;
+    typingHandler();
 
     setMessage((prev) => {
       return {

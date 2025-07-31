@@ -111,7 +111,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 - [ ] Group chats
 - [ ] Video and file sharing
-- [ ] Typing indicators
+- [x] Typing indicators
 - [ ] Infinite scroll for messages
 - [ ] Dark mode
 - [ ] Message reactions

@@ -159,7 +159,7 @@ const chatSlice = createSlice({
       }
 
       if (user) {
-        let keys = ['email', 'name', 'isOnline', 'profileUrl', 'lastSeen'];
+        let keys = ['email', 'name', 'isOnline', 'profileUrl', 'lastSeen', 'isTyping'];
         for (let key in action.payload) {
           if (!keys.includes(key)) continue;
           user[key] = action.payload[key];

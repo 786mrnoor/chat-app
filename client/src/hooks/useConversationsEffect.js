@@ -23,13 +23,18 @@ export default function useConversationEffect() {
     function onUserUpdated(data) {
       dispatch(updateUser(data));
     }
+    function onMessageTyping({ userId, isTyping }) {
+      dispatch(updateUser({ userId, isTyping }));
+    }
 
     socket.on('conversation:created', onNewConversationCreated);
     socket.on('user:updated', onUserUpdated);
+    socket.on('user:typing', onMessageTyping);
 
     return () => {
       socket.off('conversation:created', onNewConversationCreated);
       socket.off('user:updated', onUserUpdated);
+      socket.off('user:typing', onMessageTyping);
     };
   }, [socket, dispatch]);
 }

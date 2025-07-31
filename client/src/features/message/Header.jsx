@@ -26,7 +26,9 @@ export default function Header() {
       <div>
         <h3 className='my-0 line-clamp-1 text-lg font-semibold text-ellipsis'>{user?.name}</h3>
         <p className='-mt-2 text-sm'>
-          {user?.isOnline ? (
+          {user?.isTyping ? (
+            <span className='text-primary'>typing...</span>
+          ) : user?.isOnline ? (
             <span className='text-primary'>online</span>
           ) : (
             <span className='text-slate-400'>offline</span>
