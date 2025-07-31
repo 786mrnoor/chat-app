@@ -7,6 +7,7 @@ import CheckPasswordPage from './pages/CheckPasswordPage';
 import ForgotPassword from './pages/ForgotPassword';
 import Profile from './pages/Profile';
 import RegisterPage from './pages/RegisterPage';
+import ResetPassword from './pages/ResetPasswordPage';
 import Index from './pages/home/Index';
 
 const routes = (
@@ -16,6 +17,7 @@ const routes = (
       <Route path='/email' element={<CheckEmailPage />} />
       <Route path='/password' element={<CheckPasswordPage />} />
       <Route path='/forgot-password' element={<ForgotPassword />} />
+      <Route path='/reset-password/:token' element={<ResetPassword />} />
     </Route>
 
     <Route path='/' element={<Index />}>

@@ -40,7 +40,7 @@ export default async function login(req, res) {
   } catch (error) {
     // console.error('Registration error:', error);
 
-    res.state(500).json({
+    res.status(500).json({
       message: error.message || 'Server error during registration',
       error: true,
     });

@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema(
     },
     dateOfBirth: Date,
     phoneNumber: { type: String, maxlength: 20 },
+    resetPasswordToken: String,
     // Optional: Last time user was seen online (for displaying last seen status)
     lastSeen: {
       type: Date,

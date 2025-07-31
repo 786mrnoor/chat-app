@@ -10,6 +10,8 @@ router
   .post('/register', authController.register)
   .post('/login', authController.login)
   .post('/logout', authController.logout)
+  .post('/forgot-password', authController.forgotPassword)
+  .post('/reset-password/:token', authController.resetPassword)
   .get('/me', authMiddleware, authController.me);
 
 export default router;

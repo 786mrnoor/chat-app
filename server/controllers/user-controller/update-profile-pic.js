@@ -40,7 +40,7 @@ function updateProfilePic(req, res) {
       });
 
       // Update user
-      await UserModel.updateOne({ _id: req.user._id }, { profileUrl: result.url });
+      await UserModel.updateOne({ _id: req.user._id }, { profileUrl: result.secure_url });
       res.status(200).json({
         message: 'Profile picture updated',
         profileUrl: result.url,

@@ -1,7 +1,5 @@
 import { useDispatch } from 'react-redux';
 
-// import { createOptimisticMessage } from '@/store/messages';
-
 import { useSocket } from '@/contexts/SocketContext';
 import preloadImage from '@/helpers/preload-image';
 import reduceImage from '@/helpers/reduce-image';

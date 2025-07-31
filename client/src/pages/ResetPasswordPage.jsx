@@ -1,15 +1,16 @@
 import axios from 'axios';
 import { useActionState } from 'react';
 import toast from 'react-hot-toast';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import formDataToJson from '@/helpers/form-data-to-json';
 
-export default function ForgotPassword() {
+export default function ResetPassword() {
   const [data, formAction, pending] = useActionState(handleSubmit, {
-    email: '',
+    password: '',
   });
   const navigate = useNavigate();
+  const { token } = useParams();
 
   async function handleSubmit(previousState, formData) {
     let data = formDataToJson(formData);
@@ -17,8 +18,8 @@ export default function ForgotPassword() {
       return data;
     }
     try {
-      const response = await axios.post('/api/auth/forgot-password', {
-        email: data.email,
+      const response = await axios.post(`/api/auth/reset-password/${token}`, {
+        password: data.password,
       });
 
       if (response.data.success) {
@@ -35,32 +36,26 @@ export default function ForgotPassword() {
   return (
     <div className='mt-5'>
       <div className='mx-auto w-full max-w-md overflow-hidden rounded bg-white p-4'>
-        <h2 className='text-center text-2xl'>Forgot Password</h2>
+        <h2 className='text-center text-2xl'>Reset Password</h2>
 
         <form className='mt-3 grid gap-4' action={formAction} autoComplete='off'>
           <div>
-            <label htmlFor='email'>Email :</label>
+            <label htmlFor='password'>Enter New Password :</label>
             <input
-              type='email'
-              id='email'
-              name='email'
-              placeholder='enter your email'
+              type='password'
+              id='password'
+              name='password'
+              placeholder='enter your password'
               className='form-control'
-              defaultValue={data.email}
+              defaultValue={data.password}
               required
             />
           </div>
 
           <button disabled={pending} type='submit' className='form-button'>
-            Forgot Password
+            Update Password
           </button>
         </form>
-
-        <p className='my-3 text-center'>
-          <Link to='/email' className='cursor-pointer font-semibold hover:text-primary'>
-            Back to login
-          </Link>
-        </p>
       </div>
     </div>
   );
