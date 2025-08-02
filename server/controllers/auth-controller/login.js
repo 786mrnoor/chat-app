@@ -34,7 +34,7 @@ export default async function login(req, res) {
       sameSite: true,
     });
 
-    res.status(200).json({ success: true, message: 'logged-in', token });
+    res.status(200).json({ success: true, message: 'logged-in successfully' });
 
     // console.log(`[User logged-in]- name: ${user.name}, email: ${email}`);
   } catch (error) {

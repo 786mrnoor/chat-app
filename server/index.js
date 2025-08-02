@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 
 import app from './app.js';
 import connectDB from './config/connect-db.js';
-import verifySession from './helpers/verify-session.js';
+import socketAuthMiddleware from './middlewares/socket-auth-middleware.js';
 import registerMessageHandlers from './socket-handlers/message-handlers/index.js';
 import registerUserHandlers from './socket-handlers/user-handlers/index.js';
 
@@ -14,19 +14,10 @@ const io = new Server(server);
 //online user
 const onlineUsers = new Map();
 
-// socket connection
+// authentication middleware
+io.use(socketAuthMiddleware);
+
 io.on('connection', async (socket) => {
-  const token = socket.handshake?.auth?.token;
-
-  // verify the session
-  const user = await verifySession(token);
-  if (!user) {
-    // disconnect the user and give instruction to redirect the user;
-    // console.error('user is not authenticated\n', token, socket.id);
-    return;
-  }
-  socket.user = user;
-
   // handle connection and disconnection of a user
   registerUserHandlers(io, socket, onlineUsers);
 

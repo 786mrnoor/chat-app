@@ -5,7 +5,7 @@ async function checkEmail(req, res) {
     let { email } = req.query;
     email = email.toLowerCase();
 
-    const user = await UserModel.findOne({ email }).select('-password');
+    const user = await UserModel.findOne({ email }).select('name email profileUrl');
 
     if (!user) {
       return res.status(400).json({

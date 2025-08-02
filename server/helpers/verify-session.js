@@ -10,10 +10,7 @@ async function verifySession(token) {
   try {
     const decode = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-    const user = await UserModel.findById(decode._id)
-      .select('-password -createdAt -updatedAt -__v')
-      .lean()
-      .exec();
+    const user = await UserModel.findById(decode._id).select('name email profileUrl').lean().exec();
 
     return user;
   } catch (error) {
