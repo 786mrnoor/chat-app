@@ -1,19 +1,11 @@
 import moment from 'moment';
 import { memo } from 'react';
 import { FaImage, FaVideo } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
 
 import Avatar from '@/components/Avatar';
 import MessageStatusBadge from '@/components/MessageStatusBadge';
 
-import { setActiveConversation } from '@/store/chat-slice';
-
-const ConversationCard = memo(function ConversationCard({ conversation, user, isActive }) {
-  const dispatch = useDispatch();
-  function onClick(conversationId) {
-    dispatch(setActiveConversation(conversationId));
-  }
-
+const ConversationCard = memo(function ConversationCard({ conversation, user, onClick, isActive }) {
   const lastMessage = conversation?.lastMessage;
   return (
     <>

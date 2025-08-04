@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaPlus, FaXmark } from 'react-icons/fa6';
 import { IoMdSend } from 'react-icons/io';
 
+import AutoResizableTextArea from '@/components/AutoResizableTextArea';
+
 import uniqueId from '@/helpers/unique-id';
-import useTextAreaAutoResize from '@/hooks/useTextAreaAutoResize';
 
 function createMessages(files, content = '') {
   let newMessages = Array.from(files).map((file, index) => ({
@@ -23,9 +24,6 @@ export default function ImageUpload({ message, onClose, onSend }) {
   const [messages, setMessages] = useState([]);
   const [index, setIndex] = useState(0);
   const activeMessage = messages[index];
-
-  const inputRef = useRef(null);
-  useTextAreaAutoResize(inputRef);
 
   useEffect(() => {
     let newMessages = createMessages(message.files, message.content);
@@ -105,14 +103,13 @@ export default function ImageUpload({ message, onClose, onSend }) {
         />
       )}
 
-      <textarea
+      <AutoResizableTextArea
         placeholder='Add a caption'
         className='scrollbar mt-3 mb-2 max-h-32 min-h-8 w-full resize-none rounded-md bg-slate-200 px-4 py-1 outline-none lg:min-h-10 lg:w-8/10 lg:py-2'
-        ref={inputRef}
         rows='1'
         value={activeMessage?.content}
         onChange={handleOnChangeCaption}
-      ></textarea>
+      />
 
       <div className='mt-auto flex h-20 w-full items-start gap-3 border-t border-slate-200 p-2 pb-0 lg:h-24'>
         <div className='scrollbar ml-auto flex gap-3 overflow-auto p-2 whitespace-pre'>

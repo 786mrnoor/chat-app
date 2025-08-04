@@ -1,5 +1,9 @@
+import { useCallback } from 'react';
 import { FiArrowUpLeft } from 'react-icons/fi';
 import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+
+import { setActiveConversation } from '@/store/chat-slice';
 
 import ConversationCard from './ConversationCard';
 
@@ -9,6 +13,15 @@ export default function Conversations() {
   const conversations = useSelector((state) => state.conversations);
   const sortedConversations = conversations.toSorted(
     (a, b) => new Date(b.lastMessageTimestamp) - new Date(a.lastMessageTimestamp)
+  );
+
+  const dispatch = useDispatch();
+
+  const handleClick = useCallback(
+    (conversationId) => {
+      dispatch(setActiveConversation(conversationId));
+    },
+    [dispatch]
   );
 
   return (
@@ -38,6 +51,7 @@ export default function Conversations() {
               key={conversation?._id || conversation?.clientId}
               conversation={conversation}
               user={user}
+              onClick={handleClick}
               isActive={
                 conversation?._id === activeConversationId ||
                 conversation?.clientId === activeConversationId

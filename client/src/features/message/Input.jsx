@@ -1,14 +1,16 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { FaPlus } from 'react-icons/fa6';
 import { IoMdSend } from 'react-icons/io';
 
+import AutoResizableTextArea from '@/components/AutoResizableTextArea';
+
 import useSendAttachments from '@/hooks/useSendAttachments';
 import useSendMessage from '@/hooks/useSendMessage';
-import useTextAreaAutoResize from '@/hooks/useTextAreaAutoResize';
 
-import useTypingHandler from '../../hooks/useTypingHandler';
 import AttachmentMenu from '../attachments/AttachmentMenu';
 import ImageUpload from '../attachments/ImageUpload';
+
+import useTypingEventEmitter from './useTypingEventEmitter';
 
 const MESSAGE = {
   type: 'text',
@@ -17,17 +19,16 @@ const MESSAGE = {
 };
 export default function Input() {
   const [message, setMessage] = useState(MESSAGE);
-  const inputRef = useRef(null);
-  useTextAreaAutoResize(inputRef);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
 
   const sendMessage = useSendMessage();
   const sendAttachments = useSendAttachments();
 
-  const typingHandler = useTypingHandler();
+  const typingEventEmitter = useTypingEventEmitter();
+
   function handleOnChange(e) {
     const { value } = e.target;
-    typingHandler();
+    typingEventEmitter();
 
     setMessage((prev) => {
       return {
@@ -77,12 +78,10 @@ export default function Input() {
 
       {/**input box */}
       <form className='flex h-full w-full items-center gap-2' onSubmit={handleSendMessage}>
-        <textarea
-          type='text'
+        <AutoResizableTextArea
           placeholder='Type here message...'
           className='scrollbar max-h-32 grow-1 resize-none px-4 py-2 outline-none'
           rows='1'
-          ref={inputRef}
           value={message.content}
           onChange={handleOnChange}
         />

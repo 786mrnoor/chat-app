@@ -14,6 +14,7 @@ export default function Header() {
 
   return (
     <header className='sticky top-0 flex h-[var(--top-header-height)] items-center justify-between gap-4 border-b border-neutral-300 bg-white'>
+      {/* back button */}
       <button
         className='ml-2 cursor-pointer rounded p-2 hover:bg-neutral-200 md:hidden'
         onClick={() => dispatch(setActiveConversation(null))}

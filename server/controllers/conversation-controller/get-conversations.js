@@ -57,7 +57,14 @@ async function getConversations(req, res) {
               },
             },
             {
-              $unset: ['password', '__v'],
+              $project: {
+                _id: 1,
+                name: 1,
+                email: 1,
+                profileUrl: 1,
+                isOnline: 1,
+                lastSeen: 1,
+              },
             },
           ],
         },

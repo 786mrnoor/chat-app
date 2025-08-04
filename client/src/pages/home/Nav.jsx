@@ -22,7 +22,7 @@ export default function Header({ className, onOpenSearchUser }) {
   }
   return (
     <header
-      className={`relative flex h-full flex-col items-center gap-y-2 border-r border-neutral-300 bg-neutral-100 py-5 ${className}`}
+      className={`flex h-full flex-col items-center gap-y-2 border-r border-neutral-300 bg-neutral-100 py-5 ${className}`}
     >
       <button className='active nav-link'>
         <IoChatbubbleEllipses size={20} />

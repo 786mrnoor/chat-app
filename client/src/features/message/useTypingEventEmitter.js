@@ -2,16 +2,15 @@ import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 
 import { useSocket } from '@/contexts/SocketContext';
+import useActiveConversation from '@/hooks/useActiveConversation';
 
-import useActiveConversation from './useActiveConversation';
-
-export default function useTypingHandler() {
+export default function useTypingEventEmitter() {
   const typingTimeoutRef = useRef(null);
   const socketConnection = useSocket();
   const user = useSelector((state) => state.user);
   const activeConversation = useActiveConversation();
 
-  function handleTyping() {
+  function typingEventEmitter() {
     // Send message is typing
     if (!typingTimeoutRef.current) {
       socketConnection.emit('user:typing', {
@@ -37,5 +36,5 @@ export default function useTypingHandler() {
     }, 2000);
   }
 
-  return handleTyping;
+  return typingEventEmitter;
 }

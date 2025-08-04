@@ -10,7 +10,6 @@ function authorizationError() {
 async function socketAuthMiddleware(socket, next) {
   const req = socket.request;
 
-  // Parse cookies (manually or use cookie-parser)
   cookieParser()(req, null, async (err) => {
     if (err) return next(err);
 

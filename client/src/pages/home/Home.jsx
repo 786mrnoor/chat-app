@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Outlet, useLocation } from 'react-router';
 
+import Conversations from '@/features/conversation/Conversations';
 import MessagePage from '@/features/message/Index';
 import SearchUser from '@/features/search-user/Index';
 import useActiveConversation from '@/hooks/useActiveConversation';
@@ -12,7 +13,6 @@ import useUserEffect from '@/hooks/useUserEffect';
 import { resetState } from '@/store/chat-slice';
 
 import Banner from './Banner';
-import Conversations from './Conversations';
 import MobileNav from './MobileNav';
 import Nav from './Nav';
 
