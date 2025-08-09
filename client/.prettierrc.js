@@ -11,7 +11,7 @@ export default {
   tailwindStylesheet: './src/index.css',
 
   importOrder: [
-    '^(node:)?(react|next|axios|moment|socket.io-client|@reduxjs/toolkit)(.*)$', // Node.js builtins
+    '^(node:)?(react|next|axios|socket.io-client|@reduxjs/toolkit)(.*)$', // Node.js builtins
     '^@/components(.*)$', // Aliases (e.g., "@/components/Button")
     '^@/(.*)$', // Aliases (e.g., "@/assets/logo.png")
     '^\\.\\.\\/(.*)$', // '../'

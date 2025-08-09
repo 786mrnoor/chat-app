@@ -1,7 +1,8 @@
-import moment from 'moment';
 import { memo } from 'react';
 
 import MessageStatusBadge from '@/components/MessageStatusBadge';
+
+import timeFormatter from '@/helpers/time-formatter';
 
 const MessageCard = memo(function MessageCard({ message, user }) {
   return (
@@ -25,10 +26,12 @@ const MessageCard = memo(function MessageCard({ message, user }) {
       </div>
       <p className='px-2 whitespace-pre-wrap'>
         {message.content}{' '}
-        <span className='invisible text-[.8rem]'>{moment(message.createdAt).format('hh:mm')}</span>
+        <span className='invisible text-[.8rem]'>
+          {timeFormatter.format(new Date(message.createdAt))}
+        </span>
       </p>
       <p className='ml-auto w-fit text-[.7rem]'>
-        {moment(message.createdAt).format('hh:mm')}
+        {timeFormatter.format(new Date(message.createdAt))}
         {message?.senderId === user?._id && <MessageStatusBadge message={message} size={13} />}
       </p>
     </div>

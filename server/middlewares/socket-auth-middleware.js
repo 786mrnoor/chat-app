@@ -7,10 +7,13 @@ function authorizationError() {
   error.data = { status: 401 };
   return error;
 }
+
+let cookieParserMiddleware = cookieParser();
+
 async function socketAuthMiddleware(socket, next) {
   const req = socket.request;
 
-  cookieParser()(req, null, async (err) => {
+  cookieParserMiddleware(req, null, async (err) => {
     if (err) return next(err);
 
     const token = req.cookies?.token;

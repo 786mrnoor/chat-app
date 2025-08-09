@@ -1,9 +1,10 @@
-import moment from 'moment';
 import { memo } from 'react';
 import { FaImage, FaVideo } from 'react-icons/fa';
 
 import Avatar from '@/components/Avatar';
 import MessageStatusBadge from '@/components/MessageStatusBadge';
+
+import timeFormatter from '../../helpers/time-formatter';
 
 const ConversationCard = memo(function ConversationCard({ conversation, user, onClick, isActive }) {
   const lastMessage = conversation?.lastMessage;
@@ -20,8 +21,8 @@ const ConversationCard = memo(function ConversationCard({ conversation, user, on
               {conversation?.otherUser?.name}
             </h3>
             <span className='text-[0.7rem]'>
-              {moment(lastMessage?.deliveredAt || conversation?.lastMessageTimestamp).format(
-                'hh:mm'
+              {timeFormatter.format(
+                new Date(lastMessage?.deliveredAt || conversation?.lastMessageTimestamp)
               )}
             </span>
           </div>
