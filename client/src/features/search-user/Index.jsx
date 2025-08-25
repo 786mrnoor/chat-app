@@ -1,45 +1,19 @@
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
+import { useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
-import { IoSearchOutline } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
 
+import GeneralProfileCard from '@/components/GeneralProfileCard';
 import Loading from '@/components/Loading';
+import SearchInput from '@/components/SearchInput';
+import useSearchUser from '@/hooks/useSearchUser';
 
-import debounce from '@/helpers/debounce';
-import authAxios from '@/lib/auth-axios';
 import { setActiveConversation, startNewIndividualChat } from '@/store/chat-slice';
 
-import UserSearchCard from './UserSearchCard';
-
-const SearchUser = ({ onClose }) => {
-  const [searchUser, setSearchUser] = useState([]);
-  const [loading, setLoading] = useState(false);
+const SearchUser = ({ onClose, className }) => {
   const [search, setSearch] = useState('');
   const conversations = useSelector((state) => state.conversations);
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    let ignore = false;
-    const handleSearchUser = async () => {
-      try {
-        setLoading(true);
-        const response = await authAxios.get(`/api/users/search/?name=${search.trim()}`);
-        if (!ignore) {
-          setSearchUser(response.data.data);
-        }
-      } catch (error) {
-        toast.error(error?.response?.data?.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    handleSearchUser();
-
-    return () => {
-      ignore = true; // cleanup function to prevent state update on unmounted component
-    };
-  }, [search]);
+  const [searchUser, loading] = useSearchUser(search);
 
   function handleClick(user) {
     // find if the conversation already exists
@@ -55,28 +29,17 @@ const SearchUser = ({ onClose }) => {
     onClose();
   }
   return (
-    <div className='fixed top-0 bottom-0 left-0 z-2 flex w-full flex-col border-r border-neutral-300 bg-white md:w-[24rem] lg:w-[28rem]'>
+    <div className={`flex w-full flex-col bg-white ${className}`}>
       {/**back button */}
-      <button
-        onClick={onClose}
-        className='m-2 mb-0 w-max cursor-pointer rounded p-2 hover:bg-slate-200'
-      >
-        <IoArrowBack size={24} />
-      </button>
+      <header className='flex items-center gap-3 p-2 pb-0'>
+        <button onClick={onClose} className='w-max cursor-pointer rounded p-2 hover:bg-slate-200'>
+          <IoArrowBack size={24} />
+        </button>
 
-      {/**input*/}
-      <div className='relative p-2'>
-        <input
-          type='text'
-          placeholder='Search user by name or email'
-          className='w-full rounded-full border-2 border-transparent bg-slate-100 px-4 py-2 pr-8 outline-none hover:border-slate-200 focus:border-primary'
-          onChange={debounce((e) => setSearch(e.target.value), 400)}
-          defaultValue={search}
-        />
-        <div className='pointer-events-none absolute top-1/2 right-4 flex -translate-y-1/2 items-center justify-center'>
-          <IoSearchOutline size={25} className='text-slate-500' />
-        </div>
-      </div>
+        <h2>New chat</h2>
+      </header>
+
+      <SearchInput search={search} setSearch={setSearch} />
 
       {
         //loading spinner
@@ -87,12 +50,14 @@ const SearchUser = ({ onClose }) => {
       <div className='scrollbar mt-2 w-full overflow-auto bg-white p-2'>
         {/**no user found */}
         {searchUser.length === 0 && !loading && (
-          <p className='text-center text-slate-500'>no user found!</p>
+          <p className='text-center text-slate-500'>No user found!</p>
         )}
 
         {searchUser.length > 0 &&
           searchUser.map((user) => {
-            return <UserSearchCard key={user._id} user={user} onClick={() => handleClick(user)} />;
+            return (
+              <GeneralProfileCard key={user._id} user={user} onClick={() => handleClick(user)} />
+            );
           })}
       </div>
     </div>

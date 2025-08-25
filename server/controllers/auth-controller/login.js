@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+import logger from '../../helpers/logger.js';
 import UserModel from '../../models/user-model.js';
 
 export default async function login(req, res) {
@@ -30,15 +31,15 @@ export default async function login(req, res) {
     res.cookie('token', token, {
       httpOnly: true,
       secure: true,
-      maxAge: 86400000,
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
       sameSite: true,
     });
 
     res.status(200).json({ success: true, message: 'logged-in successfully' });
 
-    // console.log(`[User logged-in]- name: ${user.name}, email: ${email}`);
+    logger.log(`[User logged-in]- name: ${user.name}, email: ${email}`);
   } catch (error) {
-    // console.error('Registration error:', error);
+    logger.error('Registration error:', error);
 
     res.status(500).json({
       message: error.message || 'Server error during registration',

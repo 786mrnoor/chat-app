@@ -1,13 +1,14 @@
+import logger from '../../helpers/logger.js';
 import MessageModel from '../../models/message-model.js';
 
-async function initialMessages(io, socket, onlineUsers, conversationId, callback) {
+async function initialMessages(conversationId, callback) {
   if (!conversationId) {
     callback({ error: 'Conversation ID is required.' });
     return;
   }
   try {
     // mark the unread messages as read
-    const userId = socket.user?._id;
+    const userId = this.user?._id;
 
     const unseenMessages = await MessageModel.find({
       conversationId,
@@ -27,11 +28,12 @@ async function initialMessages(io, socket, onlineUsers, conversationId, callback
         readAt: new Date().toISOString(),
         senderId: msg.senderId,
       };
-      socket.to(userId.toString()).emit('message:read', payload);
+      // if the same user is on the another tab
+      this.to(userId.toString()).emit('message:read', payload);
 
       const senderId = msg.senderId.toString();
-      if (onlineUsers.has(senderId)) {
-        io.to(senderId).emit('message:read', payload);
+      if (this.onlineUsers.has(senderId)) {
+        this.to(senderId).emit('message:read', payload);
       }
     });
 
@@ -42,11 +44,15 @@ async function initialMessages(io, socket, onlineUsers, conversationId, callback
       .lean()
       .exec();
 
-    callback(messages);
-  } catch (error) {
-    // console.error('Error fetching initial messages:', error);
     callback({
-      error: 'Failed to fetch messages: ' + error.message,
+      success: true,
+      data: messages,
+    });
+  } catch (error) {
+    logger.error('Error fetching initial messages:', error);
+    callback({
+      error: true,
+      message: 'Failed to fetch initial messages',
     });
   }
 }

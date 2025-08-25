@@ -8,11 +8,14 @@ import Avatar from '@/components/Avatar';
 import Divider from '@/components/Divider';
 import Loading from '@/components/Loading';
 
-import reduceImage from '@/helpers/reduce-image';
-import authAxios from '@/lib/auth-axios';
+import { reduceChatAvatar } from '@/helpers/reduce-image';
 import { updateUser } from '@/store/chat-slice';
 
+import { useSocket } from '../contexts/SocketContext';
+import { getSignatureWithFormData } from '../lib/cloudinary';
+
 function Profile() {
+  const socket = useSocket();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
   const [uploading, setUploading] = useState(false);
@@ -36,7 +39,7 @@ function Profile() {
     setData((prev) => {
       return {
         ...prev,
-        [name]: value,
+        [name]: value.toUpperCase(),
       };
     });
   };
@@ -46,21 +49,34 @@ function Profile() {
     if (!file || !file.type.startsWith('image/')) return;
     try {
       setUploading(true);
-      const { file: reducedFile } = await reduceImage(URL.createObjectURL(file), file.type);
-      const formData = new FormData();
-      formData.append('profilePic', reducedFile);
+      //reduce image
+      const reducedImage = await reduceChatAvatar(URL.createObjectURL(file), file.type);
+      URL.revokeObjectURL(file);
 
-      const { data } = await authAxios.post('/api/users/profilePic', formData);
+      // get signature
+      const [formData, uploadUrl] = await getSignatureWithFormData('user-avatar', user._id);
 
+      formData.append('file', reducedImage);
+      //upload group photo
+      const { data: uploadResponse } = await axios.post(uploadUrl, formData);
+
+      const emitRes = await socket.timeout(10000).emitWithAck('user:update-details', {
+        userId: user?._id,
+        profileUrl: uploadResponse.secure_url,
+      });
+
+      if (emitRes.error) throw new Error(emitRes.message);
       dispatch(
         updateUser({
-          userId: user._id,
-          profileUrl: data.profileUrl,
+          userId: user?._id,
+          profileUrl: uploadResponse.secure_url,
         })
       );
+      toast.success('Profile picture updated successfully');
+      setUploading(false);
     } catch (error) {
       console.error(error);
-    } finally {
+      toast.error(error.message || 'Failed to update profile picture');
       setUploading(false);
     }
   }
@@ -70,20 +86,25 @@ function Profile() {
     e.preventDefault();
     e.stopPropagation();
     try {
-      const response = await axios.patch('/api/users', data);
+      const res = await socket.timeout(10000).emitWithAck('user:update-details', {
+        userId: user._id,
+        name: data.name,
+      });
 
-      if (response.data?.success) {
-        toast.success(response.data?.message);
-        dispatch(
-          updateUser({
-            userId: user._id,
-            name: response.data?.user?.name,
-          })
-        );
+      if (res.error) {
+        throw new Error(res.message);
       }
+
+      toast.success('Name updated successfully');
+      dispatch(
+        updateUser({
+          userId: user._id,
+          name: res.name,
+        })
+      );
     } catch (error) {
       console.error(error);
-      toast.error(error?.response?.data?.message || 'Something went wrong');
+      toast.error(error || error.message || 'Failed to update name');
     }
   };
 

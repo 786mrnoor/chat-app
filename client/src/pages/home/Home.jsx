@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { Outlet, useLocation } from 'react-router';
 
 import Conversations from '@/features/conversation/Conversations';
+import CreateGroup from '@/features/create-group/Index';
 import MessagePage from '@/features/message/Index';
 import SearchUser from '@/features/search-user/Index';
 import useActiveConversation from '@/hooks/useActiveConversation';
@@ -32,12 +33,16 @@ export default function Home() {
 
   const location = useLocation();
   const basePath = location.pathname === '/';
-  const [openSearchUser, setOpenSearchUser] = useState(false);
+  const [activeModal, setActiveModal] = useState('');
   return (
     <main
       className={`scrollbar grid h-[calc(100dvh-4rem)] grid-cols-1 grid-rows-1 overflow-auto md:h-dvh md:grid-cols-[auto_auto_1fr] ${activeConversation ? 'max-md:h-dvh' : ''}`}
     >
-      <Nav className='w-[4rem] max-md:hidden' onOpenSearchUser={() => setOpenSearchUser(true)} />
+      <Nav
+        className='w-[4rem] max-md:hidden'
+        onOpenSearchUser={() => setActiveModal('search-user')}
+        onOpenCreateGroup={() => setActiveModal('create-group')}
+      />
 
       <section
         className={`w-full md:w-[20rem] lg:w-[24rem] ${activeConversation ? 'max-md:hidden' : ''}`}
@@ -53,13 +58,28 @@ export default function Home() {
 
       <MobileNav
         className={`md:hidden ${activeConversation ? 'hidden' : ''}`}
-        onOpenSearchUser={() => setOpenSearchUser(true)}
+        onOpenSearchUser={() => setActiveModal('search-user')}
+        onOpenCreateGroup={() => setActiveModal('create-group')}
       />
       <Outlet />
 
       {
         //search user
-        openSearchUser && <SearchUser onClose={() => setOpenSearchUser(false)} />
+        activeModal === 'search-user' && (
+          <SearchUser
+            className='fixed top-0 bottom-0 left-0 z-2 border-r border-neutral-300 md:w-[24rem] lg:w-[28rem]'
+            onClose={() => setActiveModal('')}
+          />
+        )
+      }
+      {
+        //create group
+        activeModal === 'create-group' && (
+          <CreateGroup
+            className='fixed top-0 bottom-0 left-0 z-2 border-r border-neutral-300 md:w-[24rem] lg:w-[28rem]'
+            onClose={() => setActiveModal('')}
+          />
+        )
       }
     </main>
   );

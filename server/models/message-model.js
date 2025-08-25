@@ -11,7 +11,13 @@ const messageSchema = new mongoose.Schema(
     // This allows the frontend to match its pending message with the definitive one from the server
     clientId: {
       type: String,
-      required: true,
+      validate: {
+        validator: function (v) {
+          if (this.type === 'system') return true;
+          return !!v;
+        },
+        message: 'Client ID is required for messages other than systems.',
+      },
     },
     senderId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -29,10 +35,10 @@ const messageSchema = new mongoose.Schema(
       maxlength: 5000,
       validate: {
         validator: function (v) {
-          if (['text', 'system'].includes(this.type)) return !!v;
+          if (this.type === 'text') return !!v;
           return true;
         },
-        message: 'Content is required for text and system messages.',
+        message: 'Content is required for text messages.',
       },
     },
     media: {
@@ -41,14 +47,15 @@ const messageSchema = new mongoose.Schema(
       height: Number,
       publicId: String, // optional, useful for deletion/overwrite
     },
-    deliveredAt: {
-      type: Date,
-      default: null, // No default value, so it's null until set
+    meta: {
+      type: { type: String },
+      actorId: mongoose.Schema.Types.ObjectId, // person who performed the action
+      targetId: mongoose.Schema.Types.ObjectId, // person affected by the action
+      groupName: String, // name of the group (if applicable)
+      newName: String, // new group name
     },
-    readAt: {
-      type: Date,
-      default: null, // No default value, so it's null until set
-    },
+    deliveredAt: Date,
+    readAt: Date,
   },
   {
     timestamps: true,

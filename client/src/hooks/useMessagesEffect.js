@@ -7,7 +7,6 @@ import {
   markAsDelivered,
   markAsRead,
   receiveMessage,
-  setMessages,
   updateLastMessage,
 } from '../store/chat-slice';
 
@@ -16,17 +15,6 @@ export default function useMessagesEffect() {
   const activeConversationId = useSelector((state) => state.activeConversationId);
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
-
-  // fetch initial messages whenever activeConversationId changes
-  useEffect(() => {
-    if (!socket || !activeConversationId) return;
-
-    socket.emit('message:initial-messages', activeConversationId, (initialMsgs) => {
-      if (!initialMsgs.error) {
-        dispatch(setMessages(initialMsgs));
-      }
-    });
-  }, [socket, dispatch, activeConversationId]);
 
   // listen to new messages
   useEffect(() => {

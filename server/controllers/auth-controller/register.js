@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 
+import logger from '../../helpers/logger.js';
 import UserModel from '../../models/user-model.js';
 
 export default async function register(req, res) {
@@ -26,9 +27,9 @@ export default async function register(req, res) {
       message: 'User registered successfully',
     });
 
-    // console.log(`[User registered]- name: ${name}, email: ${email}`);
+    logger.log(`[User registered]- name: ${name}, email: ${email}`);
   } catch (error) {
-    // console.error('Registration error:', error);
+    logger.error('Registration error:', error);
     res.status(500).json({
       message: 'Server error during registration',
       error: error.message,

@@ -22,19 +22,28 @@ export default function Header() {
         <IoArrowBack size={24} />
       </button>
 
-      <Avatar className='sm:ml-2' size={50} user={user} />
+      <Avatar
+        imageUrl={activeConversation?.type === 'group' ? activeConversation?.iconUrl : ''}
+        className='sm:ml-2'
+        size={50}
+        user={user}
+      />
 
       <div>
-        <h3 className='my-0 line-clamp-1 text-lg font-semibold text-ellipsis'>{user?.name}</h3>
-        <p className='-mt-2 text-sm'>
-          {user?.isTyping ? (
-            <span className='text-primary'>typing...</span>
-          ) : user?.isOnline ? (
-            <span className='text-primary'>online</span>
-          ) : (
-            <span className='text-slate-400'>offline</span>
-          )}
-        </p>
+        <h3 className='my-0 line-clamp-1 text-lg font-semibold text-ellipsis'>
+          {activeConversation?.type === 'group' ? activeConversation?.name : user?.name}
+        </h3>
+        {activeConversation?.type === 'individual' && (
+          <p className='-mt-2 text-sm'>
+            {user?.isTyping ? (
+              <span className='text-primary'>typing...</span>
+            ) : user?.isOnline ? (
+              <span className='text-primary'>online</span>
+            ) : (
+              <span className='text-slate-400'>offline</span>
+            )}
+          </p>
+        )}
       </div>
 
       <div className='ml-auto'>

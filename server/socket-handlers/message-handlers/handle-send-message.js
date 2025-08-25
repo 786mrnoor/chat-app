@@ -1,9 +1,11 @@
 import findIndividualExistingConversation from '../../helpers/find-individual-existing-conversation.js';
+import logger from '../../helpers/logger.js';
 import ConversationModel from '../../models/conversation-model.js';
 import MessageModel from '../../models/message-model.js';
 import UserModel from '../../models/user-model.js';
 
-async function handleSendMessage(io, socket, onlineUsers, data) {
+async function handleSendMessage(data) {
+  const onlineUsers = this.onlineUsers;
   // async (data) => {
   let {
     type = 'text', // Default message type
@@ -15,10 +17,7 @@ async function handleSendMessage(io, socket, onlineUsers, data) {
     conversationClientId,
   } = data;
 
-  // console.log('Recipient ID:', recipientId);
-  // console.log('Existing Conversation ID:', existingConversationId);
-
-  const actualSenderId = socket.user?._id;
+  const actualSenderId = this.user?._id;
   let currentConversationId = existingConversationId;
 
   try {
@@ -39,33 +38,34 @@ async function handleSendMessage(io, socket, onlineUsers, data) {
           createdBy: actualSenderId, // The user who initiated it
         });
         await conversation.save();
-        // console.log('New individual conversation created:', conversation._id);
 
         // Notify both users that a new conversation has been created
-        const user = await UserModel.findById(recipientId).select('-password -__v').lean().exec();
+        const user = await UserModel.findById(recipientId)
+          .select('name email profileUrl isOnline lastSeen')
+          .lean()
+          .exec();
         const payload = conversation.toObject();
         payload.otherUser = user;
         delete payload?.members; // Remove members array
-        io.to(actualSenderId.toString()).emit('conversation:created', { ...payload });
+        this.server.to(actualSenderId.toString()).emit('conversation:created', { ...payload });
 
         // If recipient is online, notify them too
         if (onlineUsers.has(recipientId)) {
-          payload.otherUser = socket?.user;
-          io.to(recipientId).emit('conversation:created', payload);
+          payload.otherUser = this.user;
+          this.to(recipientId).emit('conversation:created', payload);
         }
-        // console.log('New conversation emitted');
       }
       currentConversationId = conversation._id;
     } else if (!currentConversationId && !recipientId) {
       // This case handles attempts to send message without recipientId or conversationId.
       // In a real app, groups would be created via a separate API call before messaging.
-      // console.log(
-      //   'No recipient ID or existing Conversation ID provided.',
-      //   recipientId,
-      //   currentConversationId
-      // );
+      logger.log(
+        'No recipient ID or existing Conversation ID provided.',
+        recipientId,
+        currentConversationId
+      );
 
-      socket.emit('messageError', 'Recipient ID or existing Conversation ID is required.');
+      this.emit('messageError', 'Recipient ID or existing Conversation ID is required.');
       return;
     }
 
@@ -80,11 +80,10 @@ async function handleSendMessage(io, socket, onlineUsers, data) {
     });
 
     await newMessage.save();
-    // console.log('Message saved to DB:', newMessage._id);
 
     // --- Update Conversation with last message info ---
     // This is important for displaying snippets in the chat list.
-    await ConversationModel.findByIdAndUpdate(
+    const conversation = await ConversationModel.findByIdAndUpdate(
       currentConversationId,
       {
         lastMessage: newMessage._id,
@@ -92,19 +91,35 @@ async function handleSendMessage(io, socket, onlineUsers, data) {
         lastMessageTimestamp: newMessage.createdAt,
       },
       { runValidators: true, lean: true } // Return the updated document
-    );
+    ).exec();
 
-    // Emit the message to all clients in the conversation's room
-    if (onlineUsers.has(recipientId)) {
-      newMessage.deliveredAt = new Date();
-      await newMessage.save();
-      io.to(recipientId).emit('message:received', newMessage);
+    let deliveredTo;
+    // check if recipient is online
+    if (recipientId && onlineUsers.has(recipientId)) {
+      deliveredTo = recipientId;
+    }
+    // check if one of the members is online other than the sender
+    else if (conversation.type === 'group') {
+      // emit to all users in the group
+      const sockets = await this.server.in(currentConversationId.toString()).fetchSockets();
+      const isAMemberOnline = sockets.some(
+        (socket) => socket.user?._id.toString() !== actualSenderId.toString()
+      );
+
+      if (isAMemberOnline) {
+        deliveredTo = currentConversationId.toString();
+      }
     }
 
-    io.to(actualSenderId.toString()).emit('message:received', newMessage);
+    if (deliveredTo) {
+      newMessage.deliveredAt = new Date();
+      await newMessage.save();
+    }
+
+    this.server.to(actualSenderId.toString()).to(deliveredTo).emit('message:received', newMessage);
   } catch (error) {
-    // console.error('Error in sendMessage:', error);
-    socket.emit('messageError', 'Failed to send message: ' + error.message);
+    logger.error('Error in sendMessage:', error);
+    this.emit('messageError', 'Failed to send message: ' + error.message);
   }
 }
 export default handleSendMessage;

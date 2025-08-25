@@ -1,3 +1,4 @@
+import logger from '../../helpers/logger.js';
 import ConversationModel from '../../models/conversation-model.js';
 import MessageModel from '../../models/message-model.js';
 
@@ -36,7 +37,7 @@ async function markMessagesAsDelivered(io, onlineUsers, userId) {
       });
     });
   } catch (err) {
-    // console.error('Failed to update delivered messages:', err);
+    logger.error('Failed to update delivered messages:', err);
   }
 }
 export default markMessagesAsDelivered;

@@ -12,7 +12,7 @@ export default {
 
   importOrder: [
     '^(node:)?(react|next|axios|socket.io-client|@reduxjs/toolkit)(.*)$', // Node.js builtins
-    '^@/components(.*)$', // Aliases (e.g., "@/components/Button")
+    '^@/(components|features|hooks|contexts)(.*)$', // Aliases (e.g., "@/components/Button")
     '^@/(.*)$', // Aliases (e.g., "@/assets/logo.png")
     '^\\.\\.\\/(.*)$', // '../'
     '^\\.\\/(.*)$', // './'

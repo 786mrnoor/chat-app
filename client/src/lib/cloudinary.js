@@ -1,21 +1,19 @@
-import axios from 'axios';
+import authAxios from '@/lib/auth-axios';
 
-export default function uploadChatImage(
-  reducedFile,
-  { signature, timestamp, api_key, cloud_name },
-  onUploadProgress
-) {
+//This function does not append file to formData
+export async function getSignatureWithFormData(type, id) {
+  const { data } = await authAxios.get(
+    `/api/cloudinary-upload-signature/image?type=${type}&id=${id}`
+  );
+
   const formData = new FormData();
-  formData.append('file', reducedFile);
-  formData.append('api_key', api_key);
-  formData.append('timestamp', timestamp);
-  formData.append('signature', signature);
-  formData.append('upload_preset', 'chat-images');
+  for (let key in data) {
+    let value = data[key];
+    if (value === 'cloud_name') continue; // Skip cloud_name as it's not needed in the form data
+    formData.append(key, value);
+  }
 
-  const cloudinaryUploadUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/auto/upload`;
-  const response = axios.post(cloudinaryUploadUrl, formData, {
-    onUploadProgress,
-  });
+  const cloudinaryUploadUrl = `https://api.cloudinary.com/v1_1/${data.cloud_name}/auto/upload`;
 
-  return response; // Return the response data for further processing if needed
+  return [formData, cloudinaryUploadUrl];
 }

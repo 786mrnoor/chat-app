@@ -7,8 +7,6 @@ const router = express.Router();
 // '/api/users'
 router
   .get('/search', authMiddleware, userController.searchUsers)
-  .get('/check-email', userController.checkEmail)
-  .patch('/', authMiddleware, userController.updateUserDetails)
-  .post('/profilePic', authMiddleware, userController.updateProfilePic);
+  .get('/check-email', userController.checkEmail);
 
 export default router;

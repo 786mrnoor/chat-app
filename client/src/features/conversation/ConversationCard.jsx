@@ -1,64 +1,63 @@
 import { memo } from 'react';
 import { FaImage, FaVideo } from 'react-icons/fa';
 
-import Avatar from '@/components/Avatar';
 import MessageStatusBadge from '@/components/MessageStatusBadge';
+import ProfileCard from '@/components/ProfileCard';
 
-import timeFormatter from '../../helpers/time-formatter';
+import timeFormatter from '@/helpers/time-formatter';
 
 const ConversationCard = memo(function ConversationCard({ conversation, user, onClick, isActive }) {
   const lastMessage = conversation?.lastMessage;
   return (
-    <>
-      <button
-        onClick={() => onClick(conversation._id)}
-        className={`my-1 flex w-full cursor-pointer items-center gap-2 rounded-2xl border px-2 py-3 ${isActive ? 'border-neutral-200 bg-neutral-100' : 'border-transparent hover:border-neutral-200 hover:bg-neutral-50'}`}
-      >
-        <Avatar user={conversation?.otherUser} size={42} className='flex-shrink-0' />
-        <div className='w-full'>
-          <div className='flex items-center justify-between'>
-            <h3 className='line-clamp-1 text-left text-base font-semibold text-ellipsis'>
-              {conversation?.otherUser?.name}
-            </h3>
-            <span className='text-[0.7rem]'>
-              {timeFormatter.format(
+    <ProfileCard
+      user={conversation?.otherUser}
+      onClick={() => onClick(conversation._id)}
+      className={isActive ? 'active' : ''}
+      imageUrl={conversation?.type === 'group' ? conversation?.iconUrl : ''}
+    >
+      <div className='w-full'>
+        <div className='flex items-center justify-between'>
+          <h3 className='line-clamp-1 text-left text-base font-semibold text-ellipsis'>
+            {conversation?.type === 'group' ? conversation?.name : conversation?.otherUser?.name}
+          </h3>
+          <span className='text-[0.7rem]'>
+            {(lastMessage?.deliveredAt || conversation?.lastMessageTimestamp) &&
+              timeFormatter.format(
                 new Date(lastMessage?.deliveredAt || conversation?.lastMessageTimestamp)
               )}
-            </span>
-          </div>
-          <div className='flex items-center gap-1 text-xs text-slate-500'>
-            {lastMessage?.imageUrl && (
-              <div className='flex items-center gap-1'>
-                <span>
-                  <FaImage />
-                </span>
-                {!lastMessage?.content && <span>Image</span>}
-              </div>
-            )}
-            {lastMessage?.videoUrl && (
-              <div className='flex items-center gap-1'>
-                <span>
-                  <FaVideo />
-                </span>
-                {!lastMessage?.content && <span>Video</span>}
-              </div>
-            )}
-            <p className='line-clamp-1 text-left text-ellipsis'>
-              {conversation?.lastMessageSender === user?._id && (
-                <MessageStatusBadge message={conversation?.lastMessage} size={13} />
-              )}
-              {lastMessage?.content}
-            </p>
-          </div>
+          </span>
         </div>
-        {conversation?.unseenCount > 0 && (
-          <p className='ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-primary p-1 text-xs font-semibold text-white'>
-            {conversation?.unseenCount}
+        <div className='flex items-center gap-1 text-xs text-slate-500'>
+          {lastMessage?.imageUrl && (
+            <div className='flex items-center gap-1'>
+              <span>
+                <FaImage />
+              </span>
+              {!lastMessage?.content && <span>Image</span>}
+            </div>
+          )}
+          {lastMessage?.videoUrl && (
+            <div className='flex items-center gap-1'>
+              <span>
+                <FaVideo />
+              </span>
+              {!lastMessage?.content && <span>Video</span>}
+            </div>
+          )}
+          <p className='line-clamp-1 text-left text-ellipsis'>
+            {lastMessage?.type !== 'system' && conversation?.lastMessageSender === user?._id && (
+              <MessageStatusBadge message={conversation?.lastMessage} size={13} />
+            )}
+            {lastMessage?.type === 'image' ? 'Photo' : lastMessage?.content}
           </p>
-        )}
-      </button>
-      <hr className='border-neutral-200' />
-    </>
+        </div>
+      </div>
+      {conversation?.unseenCount > 0 && (
+        <p className='ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-primary p-1 text-xs font-semibold text-white'>
+          {conversation?.unseenCount}
+        </p>
+      )}
+    </ProfileCard>
   );
 });
 

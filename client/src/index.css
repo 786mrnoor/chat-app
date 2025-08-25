@@ -56,10 +56,24 @@
 }
 
 @utility nav-link {
-  @apply flex h-12 w-12 cursor-pointer items-center justify-center rounded hover:bg-neutral-200;
+  @apply flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded hover:bg-neutral-200;
 
   &.active {
     @apply bg-neutral-300;
+  }
+}
+
+@utility profile-card {
+  @apply my-1 flex w-full cursor-pointer items-center gap-2 rounded-2xl border border-transparent px-2 py-3;
+
+  &.active {
+    @apply border-neutral-200 bg-neutral-100;
+  }
+  &.selected {
+    @apply border-primary bg-primary/10;
+  }
+  &:hover:not(.active, .selected) {
+    @apply border-neutral-200 bg-neutral-50;
   }
 }
 

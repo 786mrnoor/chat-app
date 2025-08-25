@@ -12,7 +12,8 @@ export default function Avatar({ size, imageUrl, user, className }) {
           width={size}
           height={size}
           alt={user?.name}
-          className='overflow-hidden rounded-full'
+          className='overflow-hidden rounded-full object-cover'
+          style={{ width: size + 'px', height: size + 'px' }}
           loading='lazy'
         />
       ) : (

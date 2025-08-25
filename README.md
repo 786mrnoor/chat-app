@@ -23,7 +23,6 @@ A full-stack real-time chat application built with **React**, **Express**, **Mon
 - Express.js
 - MongoDB + Mongoose
 - Socket.IO server
-- Multer (with memoryStorage)
 - Cloudinary SDK
 
 ---
@@ -71,14 +70,19 @@ npm install
 #### Backend (`server/.env`)
 
 ```
+NODE_ENV=development | production
+CLIENT_URL=your_frontend_client_url
+
 MONGODB_URI=your_mongo_uri
+
 JWT_SECRET_KEY=your_jwt_secret
 JWT_RESET_SECRET_KEY=your_jwt_reset_secret_key
-CLIENT_URL=your_frontend_client_url
+
 EMAIL_USER=your_gmail_id
 EMAIL_PASS=your_gmail_app_password
 
 CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_PRESET_NAME=your_preset_name
 CLOUDINARY_API_KEY=your_key
 CLOUDINARY_API_SECRET=your_secret
 ```

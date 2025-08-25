@@ -1,4 +1,7 @@
-export default function reduceImage(url, type = 'image/jpeg') {
+export default function reduceImage(
+  url,
+  { type = 'image/jpeg', maxWidth = 3000, maxHeight = 3000, quality = 0.6 }
+) {
   return new Promise((resolve) => {
     const img = new Image();
 
@@ -9,18 +12,10 @@ export default function reduceImage(url, type = 'image/jpeg') {
       let width = img.naturalWidth;
       let height = img.naturalHeight;
 
-      if (width >= 4000 || height >= 4000) {
-        width *= 0.2;
-        height *= 0.2;
-      } else if (width >= 3000 || height >= 3000) {
-        width *= 0.3;
-        height *= 0.3;
-      } else if (width >= 2000 || height >= 2000) {
-        width *= 0.4;
-        height *= 0.4;
-      } else if (width >= 1000 || height >= 1000) {
-        width *= 0.8;
-        height *= 0.8;
+      if (width > maxWidth || height > maxHeight) {
+        const scale = Math.min(maxWidth / width, maxHeight / height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
       }
 
       canvas.width = width;
@@ -30,7 +25,17 @@ export default function reduceImage(url, type = 'image/jpeg') {
       ctx.drawImage(img, 0, 0, width, height);
 
       // resolve the promise (return the blob)
-      canvas.toBlob((file) => resolve({ file, width, height }), type, 0.6); // 60% quality
+      // canvas.toBlob((file) => resolve({ file, width, height }), type, quality); // 60% quality
+      canvas.toBlob(resolve, type, quality); // 60% quality
     };
+  });
+}
+
+export function reduceChatAvatar(url, type) {
+  return reduceImage(url, {
+    type: type,
+    maxWidth: 300,
+    maxHeight: 300,
+    quality: 0.7,
   });
 }

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-import sendEmail from '../../config/nodemailer.js';
+import logger from '../../helpers/logger.js';
 import sendForgotPasswordEmail from '../../helpers/sendForgotPasswordEmail.js';
 import UserModel from '../../models/user-model.js';
 
@@ -23,7 +23,7 @@ export default async function forgotPassword(req, res) {
 
     res.json({ success: true, message: 'Password reset link sent to your email' });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).json({
       message: error.message || 'Server error during registration',
       error: true,

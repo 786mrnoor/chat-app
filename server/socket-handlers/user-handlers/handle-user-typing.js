@@ -1,8 +1,8 @@
-async function handleUserTyping(io, onlineUsers, { userId, otherUserId, isTyping }) {
+async function handleUserTyping({ userId, otherUserId, isTyping }) {
   //userId is the one who is typing
   // otherUser is the one being typed to
-  if (onlineUsers.has(otherUserId)) {
-    io.to(otherUserId).emit('user:typing', { userId, isTyping });
+  if (this.onlineUsers.has(otherUserId)) {
+    this.to(otherUserId).emit('user:typing', { userId, isTyping });
   }
 }
 

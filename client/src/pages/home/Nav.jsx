@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { BiLogOut } from 'react-icons/bi';
-import { FaUserPlus } from 'react-icons/fa';
+import { FaUserPlus, FaUsers } from 'react-icons/fa';
 import { IoChatbubbleEllipses } from 'react-icons/io5';
 import { useSelector } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router';
 
 import Avatar from '@/components/Avatar';
 
-export default function Header({ className, onOpenSearchUser }) {
+export default function Header({ className, onOpenSearchUser, onOpenCreateGroup }) {
   const user = useSelector((state) => state.user);
 
   const navigate = useNavigate();
@@ -30,6 +30,10 @@ export default function Header({ className, onOpenSearchUser }) {
 
       <button onClick={onOpenSearchUser} className='nav-link'>
         <FaUserPlus size={20} />
+      </button>
+
+      <button onClick={onOpenCreateGroup} className='nav-link'>
+        <FaUsers size={20} />
       </button>
 
       <NavLink to='/profile' className='mt-auto nav-link' title={user?.name}>

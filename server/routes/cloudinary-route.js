@@ -5,6 +5,6 @@ import authMiddleware from '../middlewares/auth-middleware.js';
 
 const router = express.Router();
 // '/api/cloudinary'
-router.get('/signature/image', authMiddleware, cloudinarySignatureController.getImageSignature);
+router.get('/image', authMiddleware, cloudinarySignatureController.getImageSignature);
 
 export default router;

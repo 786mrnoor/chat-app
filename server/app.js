@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url';
 
 import authRouter from './routes/auth-route.js';
 import cloudinarySignatureRouter from './routes/cloudinary-route.js';
-import conversationRouter from './routes/conversation-route.js';
 import userRouter from './routes/users-route.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,9 +18,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/api/auth', authRouter);
-app.use('/api/conversation', conversationRouter);
 app.use('/api/users', userRouter);
-app.use('/api/cloudinary', cloudinarySignatureRouter);
+app.use('/api/cloudinary-upload-signature', cloudinarySignatureRouter);
 
 // React fallback
 app.get('/{*splat}', (req, res) => {

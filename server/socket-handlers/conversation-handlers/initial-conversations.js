@@ -1,11 +1,9 @@
-import mongoose from 'mongoose';
-
+import logger from '../../helpers/logger.js';
 import Conversation from '../../models/conversation-model.js';
 
-async function getConversations(req, res) {
+async function initialConversations(callback) {
+  const userId = this.user?._id;
   try {
-    const userId = new mongoose.Types.ObjectId(req.user._id);
-
     const conversations = await Conversation.aggregate([
       // Stage 1: Match conversations where the current user is a member
       {
@@ -27,6 +25,7 @@ async function getConversations(req, res) {
               $match: {
                 // Messages not sent by the current user
                 senderId: { $ne: userId },
+                type: { $ne: 'system' },
                 // Messages that haven't been read by the current user
                 // (assuming readAt is null if not read)
                 readAt: null,
@@ -93,6 +92,7 @@ async function getConversations(req, res) {
           // For group chats, 'name' will be populated if it exists.
           name: 1,
           clientId: 1,
+          iconUrl: 1,
           unseenCount: 1,
           lastMessage: {
             $arrayElemAt: ['$lastMessageDetails', 0],
@@ -124,11 +124,13 @@ async function getConversations(req, res) {
       },
     ]);
 
-    res.status(200).json(conversations);
+    callback({
+      success: true,
+      data: conversations,
+    });
   } catch (error) {
-    // console.error('Error fetching conversations:', error);
-    res.status(500).json({ message: 'Server error fetching conversations', error: error.message });
+    logger.error(error);
+    callback({ error: true, message: 'Failed to fetch conversations' });
   }
 }
-
-export default getConversations;
+export default initialConversations;

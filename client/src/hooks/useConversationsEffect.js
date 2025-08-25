@@ -1,10 +1,18 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { fetchConversations } from '@/store/conversations';
+import { useSocket } from '@/contexts/SocketContext';
 
-import { useSocket } from '../contexts/SocketContext';
-import { newConversationCreated, updateUser } from '../store/chat-slice';
+import logger from '@/helpers/logger';
+
+import {
+  groupEvents,
+  newConversationCreated,
+  receiveMessage,
+  setInitialConversations,
+  updateLastMessage,
+  updateUser,
+} from '../store/chat-slice';
 
 export default function useConversationEffect() {
   const socket = useSocket();
@@ -12,7 +20,13 @@ export default function useConversationEffect() {
   // fetch initial conversations
   useEffect(() => {
     if (!socket) return;
-    dispatch(fetchConversations());
+    socket.emit('conversation:initial', (res) => {
+      if (res.success) {
+        dispatch(setInitialConversations(res.data));
+      } else {
+        console.error(res.message);
+      }
+    });
   }, [socket, dispatch]);
 
   useEffect(() => {
@@ -21,20 +35,35 @@ export default function useConversationEffect() {
       dispatch(newConversationCreated(newConversation));
     }
     function onUserUpdated(data) {
+      logger.log('user:updated', data);
       dispatch(updateUser(data));
     }
     function onMessageTyping({ userId, isTyping }) {
       dispatch(updateUser({ userId, isTyping }));
     }
+    function onGroupCreated(group) {
+      dispatch(newConversationCreated(group));
+      logger.log('group:created\n', group);
+    }
+    function onGroupEvents(type, data) {
+      logger.log('group:event\n', type, data);
+      dispatch(groupEvents(data));
+      dispatch(receiveMessage(data.message));
+      dispatch(updateLastMessage(data.message));
+    }
 
     socket.on('conversation:created', onNewConversationCreated);
-    socket.on('user:updated', onUserUpdated);
+    socket.on('user:details-updated', onUserUpdated);
     socket.on('user:typing', onMessageTyping);
+    socket.on('group:created', onGroupCreated);
+    socket.on('group:events', onGroupEvents);
 
     return () => {
       socket.off('conversation:created', onNewConversationCreated);
-      socket.off('user:updated', onUserUpdated);
+      socket.off('user:details-updated', onUserUpdated);
       socket.off('user:typing', onMessageTyping);
+      socket.off('group:created', onGroupCreated);
+      socket.off('group:events', onGroupEvents);
     };
   }, [socket, dispatch]);
 }

@@ -17,8 +17,9 @@ const conversationSchema = new mongoose.Schema(
     name: {
       type: String,
       trim: true,
-      sparse: true, // Allows multiple documents to have a null value for 'name'
     },
+    description: String,
+    iconUrl: String,
     // Array of User IDs participating in this conversation
     members: [
       {

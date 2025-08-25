@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 
 import UserModel from '../models/user-model.js';
 
+import logger from './logger.js';
+
 async function verifySession(token) {
   if (!token) {
     return null;
@@ -14,7 +16,7 @@ async function verifySession(token) {
 
     return user;
   } catch (error) {
-    // console.error('some error occurred while verifying session\n', error);
+    logger.error('some error occurred while verifying session\n', error);
     return null;
   }
 }
