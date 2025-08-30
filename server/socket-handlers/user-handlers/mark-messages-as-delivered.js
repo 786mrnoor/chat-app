@@ -14,12 +14,11 @@ async function markMessagesAsDelivered(io, onlineUsers, userId) {
       deliveredAt: null,
     }).select('_id senderId conversationId');
 
-    // 2. Bulk update
+    if (!undeliveredMessages.length <= 0) return;
+    // 2. Bulk
+    let deliveredAt = new Date();
     const messageIds = undeliveredMessages.map((msg) => msg._id);
-    await MessageModel.updateMany(
-      { _id: { $in: messageIds } },
-      { $set: { deliveredAt: new Date() } }
-    );
+    await MessageModel.updateMany({ _id: { $in: messageIds } }, { $set: { deliveredAt } });
 
     // 3. Notify
     undeliveredMessages.forEach((msg) => {
@@ -33,7 +32,7 @@ async function markMessagesAsDelivered(io, onlineUsers, userId) {
         messageId: msg._id,
         messageClientId: msg.clientId,
         conversationId: msg.conversationId,
-        deliveredAt: new Date().toISOString(),
+        deliveredAt,
       });
     });
   } catch (err) {

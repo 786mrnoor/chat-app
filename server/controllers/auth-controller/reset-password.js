@@ -8,7 +8,7 @@ function verifyToken(token) {
     if (!token) return null;
     const decode = jwt.verify(token, process.env.JWT_RESET_SECRET_KEY);
     return decode;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

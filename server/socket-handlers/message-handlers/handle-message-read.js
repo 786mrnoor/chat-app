@@ -13,10 +13,12 @@ async function markMessageAsRead({ messageId, conversationId }) {
   // to sender and receiver
   let messageSender = message.senderId.toString();
   let payload = { messageId, conversationId, readAt: message.readAt };
+  let deliveredTo = [this.user?._id?.toString()];
   if (this.onlineUsers.has(messageSender)) {
-    this.to(messageSender).emit('message:read', payload);
+    deliveredTo.push(messageSender);
   }
-  this.to(this.user?._id?.toString()).emit('message:read', payload);
+
+  this.to(deliveredTo).emit('message:read', payload);
 }
 
 export default markMessageAsRead;

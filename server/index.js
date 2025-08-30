@@ -33,9 +33,6 @@ io.on('connection', async (socket) => {
   groupHandlers(socket);
 });
 
-// Make io globally available
-app.set('io', io);
-
 const PORT = process.env.PORT || 8080;
 
 connectDB().then(() => {

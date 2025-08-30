@@ -3,7 +3,7 @@ const CHAT_AVATAR_OPTIONS = {
   overwrite: true,
   invalidate: true,
   upload_preset: CLOUDINARY_PRESET_NAME,
-  transformation: 'w_300,h_300,c_lfill,g_face/q_auto,f_auto',
+  transformation: 'w_500,h_500,c_lfill,g_face/q_auto,f_auto',
   // transformation: [
   //   { width: 300, height: 300, crop: 'lfill', gravity: 'face' },
   //   { quality: 'auto', fetch_format: 'auto' },

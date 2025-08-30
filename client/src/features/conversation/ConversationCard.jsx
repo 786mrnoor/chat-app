@@ -1,12 +1,17 @@
 import { memo } from 'react';
-import { FaImage, FaVideo } from 'react-icons/fa';
 
-import MessageStatusBadge from '@/components/MessageStatusBadge';
 import ProfileCard from '@/components/ProfileCard';
 
 import timeFormatter from '@/helpers/time-formatter';
 
-const ConversationCard = memo(function ConversationCard({ conversation, user, onClick, isActive }) {
+import LastMessageContent from './LastMessageContent';
+
+const ConversationCard = memo(function ConversationCard({
+  conversation,
+  userId,
+  onClick,
+  isActive,
+}) {
   const lastMessage = conversation?.lastMessage;
   return (
     <ProfileCard
@@ -28,28 +33,7 @@ const ConversationCard = memo(function ConversationCard({ conversation, user, on
           </span>
         </div>
         <div className='flex items-center gap-1 text-xs text-slate-500'>
-          {lastMessage?.imageUrl && (
-            <div className='flex items-center gap-1'>
-              <span>
-                <FaImage />
-              </span>
-              {!lastMessage?.content && <span>Image</span>}
-            </div>
-          )}
-          {lastMessage?.videoUrl && (
-            <div className='flex items-center gap-1'>
-              <span>
-                <FaVideo />
-              </span>
-              {!lastMessage?.content && <span>Video</span>}
-            </div>
-          )}
-          <p className='line-clamp-1 text-left text-ellipsis'>
-            {lastMessage?.type !== 'system' && conversation?.lastMessageSender === user?._id && (
-              <MessageStatusBadge message={conversation?.lastMessage} size={13} />
-            )}
-            {lastMessage?.type === 'image' ? 'Photo' : lastMessage?.content}
-          </p>
+          <LastMessageContent message={lastMessage} conversation={conversation} userId={userId} />
         </div>
       </div>
       {conversation?.unseenCount > 0 && (

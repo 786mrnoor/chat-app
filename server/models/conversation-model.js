@@ -28,6 +28,12 @@ const conversationSchema = new mongoose.Schema(
         required: true,
       },
     ],
+    conversationKey: {
+      type: String,
+      required: function () {
+        return this.type === 'individual';
+      },
+    },
     lastMessage: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Message',
@@ -54,13 +60,13 @@ const conversationSchema = new mongoose.Schema(
 
 conversationSchema.index({ members: 1 });
 
-// For individual conversations, ensure uniqueness based on members
+// For individual conversations, ensure uniqueness based on conversationKey made up of members
 // This prevents duplicate 1-on-1 conversations between the same two users.
 // Note: This unique index requires members to be sorted consistently before saving
 // (e.g., sort user IDs alphabetically before creating the conversation).
 conversationSchema.index(
-  { members: 1, type: 1 },
-  { unique: true, partialFilterExpression: { type: 'individual' } }
+  { conversationKey: 1 },
+  { unique: true, partialFilterExpression: { conversationKey: { $exists: true } } }
 );
 
 const Conversation = mongoose.model('Conversation', conversationSchema);

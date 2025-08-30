@@ -50,7 +50,7 @@ export default function Conversations() {
             <ConversationCard
               key={conversation?._id || conversation?.clientId}
               conversation={conversation}
-              user={user}
+              userId={user?._id}
               onClick={handleClick}
               isActive={
                 conversation?._id === activeConversationId ||

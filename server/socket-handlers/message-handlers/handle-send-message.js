@@ -1,4 +1,4 @@
-import findIndividualExistingConversation from '../../helpers/find-individual-existing-conversation.js';
+import findOrCreateConversation from '../../helpers/find-or-create-conversation.js';
 import logger from '../../helpers/logger.js';
 import ConversationModel from '../../models/conversation-model.js';
 import MessageModel from '../../models/message-model.js';
@@ -13,39 +13,25 @@ async function handleSendMessage(data) {
     content,
     media,
     recipientId,
-    conversationId: existingConversationId,
+    conversationId,
     conversationClientId,
   } = data;
 
   const actualSenderId = this.user?._id;
-  let currentConversationId = existingConversationId;
+  let currentConversation;
 
   try {
     // Case 1: Starting a NEW 1-on-1 chat
-    if (!currentConversationId && recipientId) {
-      // Try to find an existing individual conversation between these two users
-      let [conversation, membersSorted] = await findIndividualExistingConversation(
+    if (!conversationId && recipientId) {
+      let [conversation, recipient] = await findOrCreateConversation(
         actualSenderId,
-        recipientId
+        recipientId,
+        conversationClientId
       );
-
-      // If no conversation found, create a new one
-      if (!conversation) {
-        conversation = new ConversationModel({
-          type: 'individual',
-          clientId: conversationClientId,
-          members: membersSorted,
-          createdBy: actualSenderId, // The user who initiated it
-        });
-        await conversation.save();
-
+      if (recipient) {
         // Notify both users that a new conversation has been created
-        const user = await UserModel.findById(recipientId)
-          .select('name email profileUrl isOnline lastSeen')
-          .lean()
-          .exec();
         const payload = conversation.toObject();
-        payload.otherUser = user;
+        payload.otherUser = recipient;
         delete payload?.members; // Remove members array
         this.server.to(actualSenderId.toString()).emit('conversation:created', { ...payload });
 
@@ -55,43 +41,43 @@ async function handleSendMessage(data) {
           this.to(recipientId).emit('conversation:created', payload);
         }
       }
-      currentConversationId = conversation._id;
-    } else if (!currentConversationId && !recipientId) {
+      currentConversation = conversation;
+    } else if (!conversationId && !recipientId) {
       // This case handles attempts to send message without recipientId or conversationId.
       // In a real app, groups would be created via a separate API call before messaging.
       logger.log(
         'No recipient ID or existing Conversation ID provided.',
         recipientId,
-        currentConversationId
+        conversationId
       );
 
       this.emit('messageError', 'Recipient ID or existing Conversation ID is required.');
       return;
     }
 
+    // check if the conversation exists
+    if (!currentConversation) {
+      currentConversation = await ConversationModel.findOne({
+        _id: conversationId,
+        members: actualSenderId,
+      }).exec();
+    }
     // Create new Message document
     const newMessage = new MessageModel({
       type,
       clientId,
       content,
       media,
-      conversationId: currentConversationId,
+      conversationId: currentConversation?._id, // required
       senderId: actualSenderId,
     });
 
     await newMessage.save();
 
-    // --- Update Conversation with last message info ---
-    // This is important for displaying snippets in the chat list.
-    const conversation = await ConversationModel.findByIdAndUpdate(
-      currentConversationId,
-      {
-        lastMessage: newMessage._id,
-        lastMessageSender: newMessage.senderId,
-        lastMessageTimestamp: newMessage.createdAt,
-      },
-      { runValidators: true, lean: true } // Return the updated document
-    ).exec();
+    currentConversation.lastMessage = newMessage._id;
+    currentConversation.lastMessageSender = newMessage.senderId;
+    currentConversation.lastMessageTimestamp = newMessage.createdAt;
+    await currentConversation.save();
 
     let deliveredTo;
     // check if recipient is online
@@ -99,15 +85,14 @@ async function handleSendMessage(data) {
       deliveredTo = recipientId;
     }
     // check if one of the members is online other than the sender
-    else if (conversation.type === 'group') {
-      // emit to all users in the group
-      const sockets = await this.server.in(currentConversationId.toString()).fetchSockets();
-      const isAMemberOnline = sockets.some(
-        (socket) => socket.user?._id.toString() !== actualSenderId.toString()
+    else if (currentConversation.type === 'group') {
+      // emit to all users in the
+      const isAMemberOnline = currentConversation.members.some(
+        (m) => m.toString() !== actualSenderId.toString() && onlineUsers.has(m.toString())
       );
 
       if (isAMemberOnline) {
-        deliveredTo = currentConversationId.toString();
+        deliveredTo = currentConversation?._id?.toString();
       }
     }
 

@@ -1,10 +1,12 @@
 import cookieParser from 'cookie-parser';
 
+import logger from '../helpers/logger.js';
 import verifySession from '../helpers/verify-session.js';
 
 function authorizationError() {
   let error = new Error('not authorized');
   error.data = { status: 401 };
+  logger.error(error);
   return error;
 }
 
@@ -27,7 +29,7 @@ async function socketAuthMiddleware(socket, next) {
 
       socket.user = user; // Store user data in socket
       return next();
-    } catch (error) {
+    } catch (_error) {
       return next(authorizationError());
     }
   });
