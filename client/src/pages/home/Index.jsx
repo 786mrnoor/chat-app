@@ -1,6 +1,7 @@
 import { Provider } from 'react-redux';
 
-import SocketProvider from '@/contexts/SocketContextProvider';
+import SocketProvider from '@/features/socket/SocketContextProvider.jsx';
+
 import { store } from '@/store/store';
 
 import Home from './Home.jsx';

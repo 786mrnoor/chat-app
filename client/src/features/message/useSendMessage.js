@@ -1,10 +1,10 @@
 import { useDispatch } from 'react-redux';
 
-import { useSocket } from '@/contexts/SocketContext';
+import { useSocket } from '@/features/socket/SocketContext';
 import useOptimisticMessageCreater from '@/hooks/useOptimisticMessageCreater';
 
 import { sendMessage as dispatchMessage } from '@/store/chat-slice';
-import { updateLastMessage } from '@/store/chat-slice';
+import { updateLastMessageOfConversation } from '@/store/chat-slice';
 
 export default function useSendMessage() {
   const createOptimisticMessage = useOptimisticMessageCreater();
@@ -21,7 +21,7 @@ export default function useSendMessage() {
 
     // Dispatch the optimistic message to the store
     dispatch(dispatchMessage(newMessage));
-    dispatch(updateLastMessage(newMessage));
+    dispatch(updateLastMessageOfConversation(newMessage));
 
     // Emit the message to the server
     socketConnection.emit('message:send', newMessage);

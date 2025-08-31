@@ -7,7 +7,8 @@ import Loading from '@/components/Loading';
 import SearchInput from '@/components/SearchInput';
 import useSearchUser from '@/hooks/useSearchUser';
 
-import { setActiveConversation, startNewIndividualChat } from '@/store/chat-slice';
+import uniqueId from '@/helpers/unique-id';
+import { addConversation, setActiveConversation } from '@/store/chat-slice';
 
 const SearchUser = ({ onClose, className }) => {
   const [search, setSearch] = useState('');
@@ -23,7 +24,19 @@ const SearchUser = ({ onClose, className }) => {
     }
     // if the conversation is not exists make a temporary conversation with temporary ID
     else {
-      dispatch(startNewIndividualChat(user));
+      const newConversation = {
+        clientId: uniqueId(), // Temporary ID
+        type: 'individual',
+        otherUser: user,
+        // status: 'optimistic-creating',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastMessage: null,
+        lastMessageSender: null,
+        lastMessageTimestamp: new Date().toISOString(),
+      };
+      dispatch(addConversation(newConversation));
+      dispatch(setActiveConversation(newConversation._id));
     }
     //close the search modal
     onClose();

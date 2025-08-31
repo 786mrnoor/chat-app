@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import useActiveConversation from '../../hooks/useActiveConversation';
+import useActiveConversation from '@/hooks/useActiveConversation';
 
 import MessageCard from './MessageCard';
 import SystemMessageCard from './SystemMessageCard';

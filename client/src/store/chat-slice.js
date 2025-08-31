@@ -1,9 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import uniqueId from '@/helpers/unique-id';
-
-import { generateSystemMessage } from '../helpers/generate-system-message';
-
 import { getConversation } from './helpers';
 
 const INITIAL_STATE = {
@@ -48,18 +44,7 @@ const chatSlice = createSlice({
 
     //conversation related reducers
     setInitialConversations(state, action) {
-      state.conversations = action.payload?.map((conv) => {
-        //if lastmessage is system message then genrate content
-        if (conv.type === 'group' && conv.lastMessage?.type === 'system') {
-          const content = generateSystemMessage(
-            conv?.lastMessage?.meta,
-            state.user._id,
-            conv?.members
-          );
-          conv.lastMessage.content = content;
-        }
-        return conv;
-      });
+      state.conversations = action.payload;
     },
     setActiveConversation(state, action) {
       const conversationId = action.payload;
@@ -73,79 +58,56 @@ const chatSlice = createSlice({
       const conversation = getConversation(state.conversations, conversationId);
       conversation.unseenCount = 0;
     },
-    startNewIndividualChat(state, action) {
-      const otherUser = action.payload;
-      const newConversation = {
-        clientId: uniqueId(), // Temporary ID
-        type: 'individual',
-        otherUser,
-        // status: 'optimistic-creating',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastMessage: null,
-        lastMessageSender: null,
-        lastMessageTimestamp: new Date().toISOString(),
-      };
-
-      state.conversations.push(newConversation);
-      state.activeConversationId = newConversation.clientId;
-      state.messages = [];
-    },
-    startNewConversation(state, action) {
+    addConversation(state, action) {
       const newConversation = action.payload;
 
-      // if newConversation is a group and last message is system message then genrate content
-      if (newConversation.type === 'group' && newConversation.lastMessage?.type === 'system') {
-        const content = generateSystemMessage(
-          newConversation?.lastMessage?.meta,
-          state.user?._id,
-          newConversation?.members
-        );
-        newConversation.lastMessage.content = content;
-      }
-
-      state.conversations.push(newConversation);
-      state.activeConversationId = newConversation._id || newConversation.clientId;
-      state.messages = [];
-    },
-    newConversationCreated(state, action) {
-      const newConversation = action.payload;
-      // if the conversation already exists in any manor
-      // 1. client id matches. 2. conversation id matches. 3. other user id matches
-      if (newConversation?.lastMessage?.type === 'system') {
-        const content = generateSystemMessage(
-          newConversation?.lastMessage?.meta,
-          state.user?._id,
-          newConversation?.members
-        );
-        newConversation.lastMessage.content = content;
-      }
-      const idx = state.conversations.findIndex((conv) => {
+      //check if the conversation is exists
+      const conversationIdx = state.conversations.findIndex((conv) => {
         return (
           conv?.clientId === newConversation?.clientId ||
           conv?._id === newConversation?._id ||
           (conv.type !== 'group' && conv?.otherUser?._id === newConversation?.otherUser?._id)
         );
       });
-
-      if (idx !== -1) {
-        state.conversations[idx] = {
-          ...state.conversations[idx],
-          ...newConversation,
-        };
-      } else {
-        // New one → push
+      // if the conversation is not exists
+      if (conversationIdx === -1) {
         state.conversations.push(newConversation);
+        state.messages = [];
+      }
+      // if the active conversation is the one that was just created
+      const activeConversationId = state.activeConversationId;
+      if (
+        activeConversationId === newConversation.clientId ||
+        activeConversationId === newConversation._id
+      ) {
+        state.activeConversationId = newConversation._id || newConversation.clientId;
+      }
+    },
+    updateLastMessageOfConversation(state, action) {
+      const newMessage = action.payload;
+      const conversation = getConversation(state.conversations, newMessage.conversationId);
+
+      // if there is no last message or the last message is older than the new message
+      if (
+        !conversation?.lastMessage ||
+        new Date(conversation?.lastMessageTimestamp) <= new Date(newMessage?.createdAt)
+      ) {
+        conversation.lastMessage = newMessage;
+        conversation.lastMessageSender = newMessage.senderId;
+        conversation.lastMessageTimestamp = newMessage.createdAt;
       }
 
-      const activeConversation = getConversation(state.conversations, state.activeConversationId);
-      // if the active conversation is the one that was just created
+      // if it is the recipient and the message is not for the active conversation
       if (
-        state.activeConversationId === newConversation.clientId ||
-        (activeConversation?.type === 'individual' &&
-          activeConversation?.otherUser?._id === newConversation?.otherUser?._id)
+        newMessage.type !== 'system' &&
+        newMessage.senderId !== state?.user?._id &&
+        newMessage.conversationId !== state?.activeConversationId
       ) {
-        state.activeConversationId = newConversation._id;
+        if (conversation.unseenCount) {
+          conversation.unseenCount++;
+        } else {
+          conversation.unseenCount = 1;
+        }
       }
     },
 
@@ -156,76 +118,38 @@ const chatSlice = createSlice({
     sendMessage(state, action) {
       state.messages.push(action.payload);
     },
-    receiveMessage(state, action) {
-      const userId = state.user._id;
+    addMessage(state, action) {
       const activeConversationId = state.activeConversationId;
       let prevMessages = state.messages;
 
       const newMessage = { ...action.payload };
-      // if it is the recipient and the message is not for the active conversation
-      if (
-        newMessage.type !== 'system' &&
-        newMessage.senderId !== userId &&
-        newMessage.conversationId !== activeConversationId
-      ) {
-        const conversation = getConversation(state.conversations, newMessage.conversationId);
-        if (conversation.unseenCount) {
-          conversation.unseenCount++;
-        } else {
-          conversation.unseenCount = 1;
-        }
-      }
+
       // if the conversation is not active, we don't need to update the messages
       if (newMessage.conversationId !== activeConversationId) {
         return;
       }
 
-      // if the sender is the current user
-      if (newMessage.senderId === userId) {
-        const existingIndex = prevMessages.findIndex(
-          (msg) => msg.type !== 'system' && msg.clientId === newMessage.clientId
-        );
-        if (existingIndex !== -1) {
-          // free the URL object to avoid memory leaks
-          let existingMessage = prevMessages[existingIndex];
-          if (existingMessage.media?.url && existingMessage.media?.url.startsWith('blob:')) {
-            URL.revokeObjectURL(existingMessage.media?.url);
-          }
-
-          prevMessages[existingIndex] = newMessage;
+      const existingIndex = prevMessages.findIndex(
+        (msg) =>
+          msg.type !== 'system' &&
+          (msg._id === newMessage._id || msg.clientId === newMessage.clientId)
+      );
+      if (existingIndex !== -1) {
+        // free the URL object to avoid memory leaks
+        let existingMessage = prevMessages[existingIndex];
+        if (existingMessage?.media?.url?.startsWith('blob:')) {
+          URL.revokeObjectURL(existingMessage.media.url);
         }
-        // if sender is on another device
-        else {
-          prevMessages.push(newMessage);
-        }
-      }
-      // if it is the recipient
-      else {
+        prevMessages[existingIndex] = newMessage;
+      } else {
         prevMessages.push(newMessage);
+      }
+      // if it is the recipient, mark the message as read
+      if (state.user?._id !== newMessage?.senderId) {
         newMessage.readAt = new Date().toISOString();
       }
     },
-    updateLastMessage(state, action) {
-      const newMessage = action.payload;
-      const conversation = getConversation(state.conversations, newMessage.conversationId);
 
-      if (newMessage.type === 'system') {
-        newMessage.content = generateSystemMessage(
-          newMessage?.meta,
-          state.user?._id,
-          conversation?.members
-        );
-      }
-      // if there is no last message or the last message is older than the new message
-      if (
-        !conversation?.lastMessage ||
-        new Date(conversation?.lastMessageTimestamp) <= new Date(newMessage?.createdAt)
-      ) {
-        conversation.lastMessage = newMessage;
-        conversation.lastMessageSender = newMessage.senderId;
-        conversation.lastMessageTimestamp = newMessage.createdAt;
-      }
-    },
     markAsDelivered(state, action) {
       // if it is the last of the conversation then update the lastMessage;
       const conversation = getConversation(state.conversations, action.payload?.conversationId);
@@ -294,19 +218,23 @@ const chatSlice = createSlice({
 
 export const {
   resetState,
+  // user related actions
   setUser,
+  updateUser,
+  //conversation related actions
   setInitialConversations,
   setActiveConversation,
+  addConversation,
+  updateLastMessageOfConversation,
+
+  // message related actions
   setMessages,
   sendMessage,
-  receiveMessage,
-  updateLastMessage,
-  startNewIndividualChat,
-  startNewConversation,
-  newConversationCreated,
-  updateUser,
+  addMessage,
   markAsDelivered,
   markAsRead,
+
+  // group related actions
   groupEvents,
 } = chatSlice.actions;
 export default chatSlice.reducer;

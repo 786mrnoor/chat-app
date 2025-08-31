@@ -13,6 +13,11 @@ export default async function createGroup({ clientId, name, description, members
       type: 'group',
       members: user._id,
     })
+      .populate({
+        path: 'members',
+        select: 'name email profileUrl isOnline lastSeen',
+      }) // with the current user
+      .populate('lastMessage')
       .lean()
       .exec();
 
@@ -51,26 +56,48 @@ export default async function createGroup({ clientId, name, description, members
       });
       await message.save();
 
-      group.lastMessage = message;
-      group.lastMessageSender = user._id;
-      group.lastMessageTimestamp = message.createdAt;
+      let membersJoinMessages = members.map((member) => ({
+        conversationId: group._id,
+        senderId: user._id,
+        type: 'system',
+        meta: {
+          type: 'user_added',
+          actorId: user._id,
+          targetId: member._id,
+        },
+      }));
+
+      membersJoinMessages = await MessageModel.insertMany(membersJoinMessages, {
+        rawResult: false,
+        lean: false,
+      });
+
+      let lastMessage = membersJoinMessages.at(-1);
+      group.lastMessage = lastMessage._id;
+      group.lastMessageSender = user?._id;
+      group.lastMessageTimestamp = lastMessage.createdAt;
 
       await group.save();
+
+      // attach the populated members to the group
+      group = group.toObject();
+      group.lastMessage = lastMessage;
+      group.members = [user, ...members];
     }
-    let payload = group.toObject();
-    payload.members = members;
+    console.log(group);
+
     callback({
       success: true,
-      data: payload,
+      data: group,
     });
 
-    const groupMembersIds = group.members.map((id) => id.toString());
+    // members inclued the creator
+    const groupMembersIds = group.members.map((m) => m._id.toString());
     // join members to the group room including the creator
     this.server.in(groupMembersIds).socketsJoin(group?._id?.toString());
 
     //emit group:created event to all group members including the creator but excluding the current socket
-    payload.members.push(user);
-    this.to(groupMembersIds).emit('group:created', payload);
+    this.to(group?._id?.toString()).emit('group:created', group);
   } catch (error) {
     logger.error(error);
     callback({

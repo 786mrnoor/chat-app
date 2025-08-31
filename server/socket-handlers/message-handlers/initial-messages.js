@@ -17,25 +17,29 @@ async function initialMessages(conversationId, callback) {
     })
       .select('_id senderId conversationId readAt')
       .exec();
+    if (unseenMessages.length > 0) {
+      let readAt = new Date();
+      const messageIds = unseenMessages.map((msg) => msg._id);
+      await MessageModel.updateMany({ _id: { $in: messageIds } }, { $set: { readAt } });
 
-    const messageIds = unseenMessages.map((msg) => msg._id);
-    await MessageModel.updateMany({ _id: { $in: messageIds } }, { $set: { readAt: new Date() } });
+      unseenMessages.forEach((msg) => {
+        let payload = {
+          messageId: msg._id,
+          conversationId,
+          readAt,
+          senderId: msg.senderId,
+        };
 
-    unseenMessages.forEach((msg) => {
-      let payload = {
-        messageId: msg._id,
-        conversationId: conversationId,
-        readAt: new Date().toISOString(),
-        senderId: msg.senderId,
-      };
-      // if the same user is on the another tab
-      this.to(userId.toString()).emit('message:read', payload);
+        // if the same user is on the another tab
+        let emitTo = [userId.toString()];
 
-      const senderId = msg.senderId.toString();
-      if (this.onlineUsers.has(senderId)) {
-        this.to(senderId).emit('message:read', payload);
-      }
-    });
+        const senderId = msg.senderId.toString();
+        if (this.onlineUsers.has(senderId)) {
+          emitTo.push(senderId);
+        }
+        this.to(emitTo).emit('message:read', payload);
+      });
+    }
 
     // get all the messages
     const messages = await MessageModel.find({ conversationId })

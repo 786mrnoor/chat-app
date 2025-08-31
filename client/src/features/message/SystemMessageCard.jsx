@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { generateSystemMessage } from '../../helpers/generate-system-message';
+import { generateSystemMessage } from '@/helpers/generate-system-message';
 
 const SystemMessageCard = memo(function SystemMessageCard({ message, userId, members }) {
   const content = generateSystemMessage(message.meta, userId, members);

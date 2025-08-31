@@ -7,12 +7,11 @@ import { useNavigate } from 'react-router';
 import Avatar from '@/components/Avatar';
 import Divider from '@/components/Divider';
 import Loading from '@/components/Loading';
+import { useSocket } from '@/features/socket/SocketContext';
 
 import { reduceChatAvatar } from '@/helpers/reduce-image';
+import { getSignatureWithFormData } from '@/lib/cloudinary';
 import { updateUser } from '@/store/chat-slice';
-
-import { useSocket } from '../contexts/SocketContext';
-import { getSignatureWithFormData } from '../lib/cloudinary';
 
 function Profile() {
   const socket = useSocket();
@@ -78,6 +77,8 @@ function Profile() {
       console.error(error);
       toast.error(error.message || 'Failed to update profile picture');
       setUploading(false);
+    } finally {
+      e.target.value = '';
     }
   }
   // This function handles the other profile updates

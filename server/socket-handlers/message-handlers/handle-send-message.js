@@ -104,7 +104,7 @@ async function handleSendMessage(data) {
     this.server.to(actualSenderId.toString()).to(deliveredTo).emit('message:received', newMessage);
   } catch (error) {
     logger.error('Error in sendMessage:', error);
-    this.emit('messageError', 'Failed to send message: ' + error.message);
+    this.emit('message:error', data.clientId, error.message || 'Failed to send message');
   }
 }
 export default handleSendMessage;

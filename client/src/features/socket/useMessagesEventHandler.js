@@ -1,17 +1,15 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { useSocket } from '@/contexts/SocketContext';
-
+import logger from '@/helpers/logger';
 import {
+  addMessage,
   markAsDelivered,
   markAsRead,
-  receiveMessage,
-  updateLastMessage,
-} from '../store/chat-slice';
+  updateLastMessageOfConversation,
+} from '@/store/chat-slice';
 
-export default function useMessagesEffect() {
-  const socket = useSocket();
+export default function useMessagesEventHandler(socket) {
   const activeConversationId = useSelector((state) => state.activeConversationId);
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -27,24 +25,33 @@ export default function useMessagesEffect() {
           conversationId: newMessage.conversationId,
         });
       }
-      dispatch(receiveMessage(newMessage));
-      dispatch(updateLastMessage(newMessage));
+      logger.log('message:received', newMessage);
+      dispatch(addMessage(newMessage));
+      dispatch(updateLastMessageOfConversation(newMessage));
     }
     function onMessageDelivered(data) {
+      console.log('message:delivered', data);
       dispatch(markAsDelivered(data));
     }
     function onMessageRead(data) {
+      logger.log('message:read', data);
       dispatch(markAsRead(data));
+    }
+
+    function onMessageError(messageClientId, errorMessage) {
+      console.error(messageClientId, errorMessage);
     }
 
     socket.on('message:received', onMessageReceived);
     socket.on('message:delivered', onMessageDelivered);
     socket.on('message:read', onMessageRead);
+    socket.on('message:error', onMessageError);
 
     return () => {
       socket.off('message:received', onMessageReceived);
       socket.off('message:delivered', onMessageDelivered);
       socket.off('message:read', onMessageRead);
+      socket.off('message:error', onMessageError);
     };
   }, [socket, dispatch, activeConversationId, user?._id]);
 }

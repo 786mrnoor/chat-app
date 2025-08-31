@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { useSocket } from '@/contexts/SocketContext';
+import { useSocket } from '@/features/socket/SocketContext';
+
 import { setMessages } from '@/store/chat-slice';
 
 import Footer from './Footer';

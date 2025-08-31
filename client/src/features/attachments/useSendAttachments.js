@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 
-import { useSocket } from '@/contexts/SocketContext';
+import { useSocket } from '@/features/socket/SocketContext';
 import useOptimisticMessageCreater from '@/hooks/useOptimisticMessageCreater';
 
 import preloadImage from '@/helpers/preload-image';
 import reduceImage from '@/helpers/reduce-image';
 import { getSignatureWithFormData } from '@/lib/cloudinary';
-import { sendMessage, updateLastMessage } from '@/store/chat-slice';
+import { sendMessage, updateLastMessageOfConversation } from '@/store/chat-slice';
 
 export default function useSendAttachments() {
   const dispatch = useDispatch();
@@ -31,7 +31,7 @@ export default function useSendAttachments() {
         });
 
         dispatch(sendMessage(optimisticMessage));
-        dispatch(updateLastMessage(optimisticMessage));
+        dispatch(updateLastMessageOfConversation(optimisticMessage));
 
         return [optimisticMessage, reducedFile];
       });

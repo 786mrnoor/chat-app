@@ -8,9 +8,8 @@ import CreateGroup from '@/features/create-group/Index';
 import MessagePage from '@/features/message/Index';
 import SearchUser from '@/features/search-user/Index';
 import useActiveConversation from '@/hooks/useActiveConversation';
-import useConversationEffect from '@/hooks/useConversationsEffect';
-import useMessagesEffect from '@/hooks/useMessagesEffect';
 import useUserEffect from '@/hooks/useUserEffect';
+
 import { resetState } from '@/store/chat-slice';
 
 import Banner from './Banner';
@@ -20,8 +19,6 @@ import Nav from './Nav';
 export default function Home() {
   const dispatch = useDispatch();
   useUserEffect();
-  useConversationEffect();
-  useMessagesEffect();
 
   useEffect(() => {
     return () => {

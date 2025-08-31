@@ -1,19 +1,20 @@
 import axios from 'axios';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { useSocket } from '@/contexts/SocketContext';
+import { useSocket } from '@/features/socket/SocketContext';
 
 import { reduceChatAvatar } from '@/helpers/reduce-image';
 import uniqueId from '@/helpers/unique-id';
 import { getSignatureWithFormData } from '@/lib/cloudinary';
-import { startNewConversation } from '@/store/chat-slice';
+import { addConversation, setActiveConversation } from '@/store/chat-slice';
 
 export default function useGroupCreater(onClose) {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const socket = useSocket();
+  const user = useSelector((state) => state.user);
 
   async function createGroup(data) {
     try {
@@ -33,7 +34,11 @@ export default function useGroupCreater(onClose) {
         throw new Error(groupResponse.message);
       }
 
-      dispatch(startNewConversation(groupResponse.data));
+      //remove the current user from members
+      groupResponse.data.members = groupResponse.data.members.filter((m) => m._id !== user?._id);
+
+      dispatch(addConversation(groupResponse.data));
+      dispatch(setActiveConversation(groupResponse?.data?._id));
       toast.success('Group created successfully');
       setLoading(false);
       onClose();

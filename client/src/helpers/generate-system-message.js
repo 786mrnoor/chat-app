@@ -2,7 +2,7 @@ export function generateSystemMessage(meta = {}, userId, members) {
   const {
     type,
     actorId, // person who performed the action
-    target: targetId, // person affected by the action
+    targetId, // person affected by the action
     groupName, // name of the group (if applicable)
     newName, // new group name
   } = meta;

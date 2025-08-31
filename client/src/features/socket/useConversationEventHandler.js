@@ -1,27 +1,26 @@
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-
-import { useSocket } from '@/contexts/SocketContext';
+import { useDispatch, useSelector } from 'react-redux';
 
 import logger from '@/helpers/logger';
-
 import {
+  addConversation,
+  addMessage,
   groupEvents,
-  newConversationCreated,
-  receiveMessage,
   setInitialConversations,
-  updateLastMessage,
+  updateLastMessageOfConversation,
   updateUser,
-} from '../store/chat-slice';
+} from '@/store/chat-slice';
 
-export default function useConversationEffect() {
-  const socket = useSocket();
+export default function useConversationEventHandler(socket) {
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
+
   // fetch initial conversations
   useEffect(() => {
     if (!socket) return;
     socket.emit('conversation:initial', (res) => {
       if (res.success) {
+        logger.log('conversation:initial', res.data);
         dispatch(setInitialConversations(res.data));
       } else {
         console.error(res.message);
@@ -32,24 +31,27 @@ export default function useConversationEffect() {
   useEffect(() => {
     if (!socket) return;
     function onNewConversationCreated(newConversation) {
-      dispatch(newConversationCreated(newConversation));
+      logger.log('conversation:created', newConversation);
+      dispatch(addConversation(newConversation));
     }
     function onUserUpdated(data) {
       logger.log('user:updated', data);
       dispatch(updateUser(data));
     }
     function onMessageTyping({ userId, isTyping }) {
+      logger.log('user:typing', userId, isTyping);
       dispatch(updateUser({ userId, isTyping }));
     }
     function onGroupCreated(group) {
-      dispatch(newConversationCreated(group));
+      group.members = group.members.filter((m) => m._id !== user?._id);
       logger.log('group:created\n', group);
+      dispatch(addConversation(group));
     }
     function onGroupEvents(type, data) {
       logger.log('group:event\n', type, data);
       dispatch(groupEvents(data));
-      dispatch(receiveMessage(data.message));
-      dispatch(updateLastMessage(data.message));
+      dispatch(addMessage(data.message));
+      dispatch(updateLastMessageOfConversation(data.message));
     }
 
     socket.on('conversation:created', onNewConversationCreated);

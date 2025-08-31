@@ -8,7 +8,7 @@ export default function AttachmentMenu({ onAttachmentSelect }) {
     onAttachmentSelect(e.target.name, files);
   }
   return (
-    <div className='bg-slate-100 border border-slate-200 shadow rounded absolute bottom-14 w-42 p-2'>
+    <div className='absolute bottom-14 w-42 rounded border border-slate-200 bg-slate-100 p-2 shadow'>
       <form>
         <input
           name='image'
@@ -16,6 +16,7 @@ export default function AttachmentMenu({ onAttachmentSelect }) {
           multiple={true}
           id='uploadImage'
           onChange={handleSelect}
+          accept='image/*'
           className='hidden'
         />
 
@@ -28,14 +29,14 @@ export default function AttachmentMenu({ onAttachmentSelect }) {
         />
         <label
           htmlFor='uploadImage'
-          className='flex items-center p-2 px-3 gap-3 hover:bg-slate-200 cursor-pointer'
+          className='flex cursor-pointer items-center gap-3 p-2 px-3 hover:bg-slate-200'
         >
           <FaImage size={18} className='text-primary' />
           <span>Image</span>
         </label>
         <label
           htmlFor='uploadVideo'
-          className='flex items-center p-2 px-3 gap-3 hover:bg-slate-200 cursor-pointer'
+          className='flex cursor-pointer items-center gap-3 p-2 px-3 hover:bg-slate-200'
         >
           <FaVideo size={18} className='text-purple-500' />
           <span>Video</span>

@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import { useSocket } from '@/contexts/SocketContext';
+import { useSocket } from '@/features/socket/SocketContext';
 import useActiveConversation from '@/hooks/useActiveConversation';
 
 export default function useTypingEventEmitter() {

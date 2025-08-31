@@ -4,11 +4,16 @@ import { useNavigate } from 'react-router';
 import { io } from 'socket.io-client';
 
 import SocketContext from './SocketContext';
+import useConversationEventHandler from './useConversationEventHandler';
+import useMessagesEventHandler from './useMessagesEventHandler';
 
 export default function SocketProvider({ children }) {
   const [socketConnection, setSocketConnection] = useState(null);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
+
+  useConversationEventHandler(socketConnection);
+  useMessagesEventHandler(socketConnection);
 
   // connect socket when there is a userId
   useEffect(() => {
