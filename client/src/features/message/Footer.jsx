@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 
-import AttachmentMenu from '../attachments/AttachmentMenu';
-import ImageUpload from '../attachments/ImageUpload';
+import AttchmentUpload from '../attachments/Index';
 
+import AttachmentMenu from './AttachmentMenu';
 import Input from './Input';
 
 const MESSAGE = {
@@ -17,6 +17,7 @@ export default function Footer() {
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   function handleAttachmentSelect(type, files) {
     setShowAttachmentMenu(false);
+    if (files.length === 0) return;
     setMessage((prev) => ({ ...prev, type, files }));
   }
 
@@ -39,8 +40,8 @@ export default function Footer() {
 
       <Input message={message} setMessage={setMessage} onReset={() => setMessage(MESSAGE)} />
 
-      {message.type === 'image' && (
-        <ImageUpload
+      {message.type !== 'text' && (
+        <AttchmentUpload
           message={message}
           onClose={(content) => setMessage({ ...MESSAGE, content: content || '' })} // reset the message
         />

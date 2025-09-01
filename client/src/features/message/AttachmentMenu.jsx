@@ -2,10 +2,12 @@ import { FaImage, FaVideo } from 'react-icons/fa6';
 
 export default function AttachmentMenu({ onAttachmentSelect }) {
   function handleSelect(e) {
-    const files = e.target.files;
+    let files = e.target.files;
     if (files.length <= 0) return;
+    let type = e.target.name;
+    files = Array.from(files).filter((f) => f?.type?.startsWith(type));
 
-    onAttachmentSelect(e.target.name, files);
+    onAttachmentSelect(type, files);
   }
   return (
     <div className='absolute bottom-14 w-42 rounded border border-slate-200 bg-slate-100 p-2 shadow'>
@@ -23,8 +25,10 @@ export default function AttachmentMenu({ onAttachmentSelect }) {
         <input
           name='video'
           type='file'
+          multiple={true}
           id='uploadVideo'
           onChange={handleSelect}
+          accept='video/*'
           className='hidden'
         />
         <label

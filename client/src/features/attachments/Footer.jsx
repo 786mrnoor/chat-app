@@ -1,7 +1,10 @@
 import { FaPlus, FaXmark } from 'react-icons/fa6';
 import { IoMdSend } from 'react-icons/io';
 
+import Preview from './Preview';
+
 export default function Footer({
+  type,
   messages,
   index,
   setIndex,
@@ -15,10 +18,11 @@ export default function Footer({
         {messages.map((message, i) => (
           <div key={message?.clientId} className='group relative shrink-0'>
             <button onClick={() => setIndex(i)}>
-              <img
+              <Preview
+                type={message?.type}
+                url={message?.media?.url}
+                isThumbnail={true}
                 className={`h-12 w-12 cursor-pointer rounded border border-slate-200 object-cover hover:inset-shadow-[0_0_4px_rgba(0,0,0,0.2)] lg:h-16 lg:w-16 ${i === index ? 'ring-2 ring-primary' : 'ring-1 ring-slate-200'}`}
-                src={message?.media?.url}
-                alt=''
               />
             </button>
 
@@ -40,8 +44,8 @@ export default function Footer({
         <input
           type='file'
           id='upload'
-          accept='image/*'
-          multiple
+          accept={type === 'image' ? 'image/*' : 'video/*'}
+          multiple={true}
           onChange={handleAddImage}
           className='hidden'
         />

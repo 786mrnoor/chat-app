@@ -6,12 +6,13 @@ import AutoResizableTextArea from '@/components/AutoResizableTextArea';
 import uniqueId from '@/helpers/unique-id';
 
 import Footer from './Footer';
+import Preview from './Preview';
 import useSendAttachments from './useSendAttachments';
 
-function createMessages(files, content = '') {
-  let newMessages = Array.from(files).map((file, index) => ({
+function createMessages(files, content = '', type = 'image') {
+  let newMessages = files.map((file, index) => ({
     clientId: uniqueId(),
-    type: 'image',
+    type,
     media: {
       url: URL.createObjectURL(file),
       type: file.type,
@@ -29,25 +30,18 @@ export default function ImageUpload({ message, onClose }) {
   const sendAttachments = useSendAttachments();
 
   useEffect(() => {
-    let newMessages = createMessages(message.files, message.content);
+    let newMessages = createMessages(message.files, message.content, message.type);
     setMessages(newMessages);
     return () => {
       setMessages([]);
     };
-  }, [message.files, message.content]);
+  }, [message.files, message.content, message.type]);
 
   function handleOnChangeCaption(e) {
     const { value } = e.target;
+    let newMessage = { ...activeMessage, content: value };
     setMessages((prev) => {
-      return prev.map((message, i) => {
-        if (index === i) {
-          return {
-            ...message,
-            content: value,
-          };
-        }
-        return message;
-      });
+      return prev.map((message, i) => (index === i ? newMessage : message));
     });
   }
   function removeMessage(message) {
@@ -82,16 +76,19 @@ export default function ImageUpload({ message, onClose }) {
     onClose(content);
   }
   async function handleAddImage(e) {
-    const files = e.target.files;
+    let files = e.target.files;
     if (files.length <= 0) return;
 
-    let newMessages = createMessages(files);
+    let type = message.type;
+    files = Array.from(files).filter((f) => f?.type?.startsWith(type));
+
+    let newMessages = createMessages(files, '', message.type);
     setMessages((prev) => [...prev, ...newMessages]);
     e.target.value = '';
   }
 
   async function handleSendAttachments() {
-    sendAttachments(messages, 'image');
+    sendAttachments(messages, message.type);
     // reset the message state;
     onClose('');
   }
@@ -105,10 +102,10 @@ export default function ImageUpload({ message, onClose }) {
         <FaXmark size={20} className='text-black/80' />
       </button>
       {activeMessage && (
-        <img
-          src={activeMessage?.media?.url}
+        <Preview
+          type={activeMessage?.type}
+          url={activeMessage?.media?.url}
           className='max-h-[300px] max-w-[min(100%,350px)] min-w-20 rounded border border-slate-200 object-contain shadow-[0_0_4px_rgba(0,0,0,0.2)]'
-          alt=''
         />
       )}
 
@@ -121,6 +118,7 @@ export default function ImageUpload({ message, onClose }) {
       />
 
       <Footer
+        type={message.type}
         messages={messages}
         index={index}
         setIndex={setIndex}

@@ -30,7 +30,7 @@ export default function useMessagesEventHandler(socket) {
       dispatch(updateLastMessageOfConversation(newMessage));
     }
     function onMessageDelivered(data) {
-      console.log('message:delivered', data);
+      logger.log('message:delivered', data);
       dispatch(markAsDelivered(data));
     }
     function onMessageRead(data) {

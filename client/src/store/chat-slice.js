@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { getConversation } from './helpers';
+import { getConversation, isSameConversation } from './helpers';
 
 const INITIAL_STATE = {
   user: null,
@@ -48,6 +48,7 @@ const chatSlice = createSlice({
     },
     setActiveConversation(state, action) {
       const conversationId = action.payload;
+
       if (state.activeConversationId === conversationId) return;
       state.activeConversationId = conversationId;
       state.messages = [];
@@ -55,37 +56,49 @@ const chatSlice = createSlice({
       if (!conversationId) return;
 
       // update unseen count;
-      const conversation = getConversation(state.conversations, conversationId);
+      const conversation = getConversation(state.conversations, {
+        id: conversationId,
+        clientId: conversationId,
+      });
+
       conversation.unseenCount = 0;
     },
     addConversation(state, action) {
       const newConversation = action.payload;
 
       //check if the conversation is exists
-      const conversationIdx = state.conversations.findIndex((conv) => {
-        return (
-          conv?.clientId === newConversation?.clientId ||
-          conv?._id === newConversation?._id ||
-          (conv.type !== 'group' && conv?.otherUser?._id === newConversation?.otherUser?._id)
-        );
-      });
-      // if the conversation is not exists
-      if (conversationIdx === -1) {
+      const conversation = state.conversations.find((conv) =>
+        isSameConversation(conv, {
+          id: newConversation?._id,
+          clientId: newConversation?.clientId,
+          otherUserId: newConversation?.otherUser?._id,
+        })
+      );
+      // if the conversation is exists
+      if (conversation) {
+        conversation._id = newConversation?._id;
+      } else {
         state.conversations.push(newConversation);
-        state.messages = [];
       }
       // if the active conversation is the one that was just created
       const activeConversationId = state.activeConversationId;
+
       if (
-        activeConversationId === newConversation.clientId ||
-        activeConversationId === newConversation._id
+        isSameConversation(newConversation, {
+          id: activeConversationId,
+          clientId: activeConversationId,
+        })
       ) {
         state.activeConversationId = newConversation._id || newConversation.clientId;
+        state.messages = [];
       }
     },
     updateLastMessageOfConversation(state, action) {
       const newMessage = action.payload;
-      const conversation = getConversation(state.conversations, newMessage.conversationId);
+      const conversation = getConversation(state.conversations, {
+        id: newMessage.conversationId,
+        clientId: newMessage.conversationClientId,
+      });
 
       // if there is no last message or the last message is older than the new message
       if (
@@ -101,7 +114,8 @@ const chatSlice = createSlice({
       if (
         newMessage.type !== 'system' &&
         newMessage.senderId !== state?.user?._id &&
-        newMessage.conversationId !== state?.activeConversationId
+        (newMessage.conversationId !== state?.activeConversationId ||
+          newMessage.conversationClientId !== state?.activeConversationId)
       ) {
         if (conversation.unseenCount) {
           conversation.unseenCount++;
@@ -151,8 +165,9 @@ const chatSlice = createSlice({
     },
 
     markAsDelivered(state, action) {
+      const conversationId = action.payload.conversationId;
       // if it is the last of the conversation then update the lastMessage;
-      const conversation = getConversation(state.conversations, action.payload?.conversationId);
+      const conversation = getConversation(state.conversations, { id: conversationId });
       if (
         conversation?.lastMessage?.clientId === action?.payload?.messageClientId ||
         conversation?.lastMessage?._id === action.payload?.messageId
@@ -176,7 +191,9 @@ const chatSlice = createSlice({
     },
     markAsRead(state, action) {
       // if it is the last message of the conversation then update the lastMessage;
-      const conversation = getConversation(state.conversations, action.payload.conversationId);
+      const conversation = getConversation(state.conversations, {
+        id: action.payload.conversationId,
+      });
       if (
         conversation.lastMessage?.clientId === action.payload?.messageClientId ||
         conversation.lastMessage?._id === action.payload?.messageId
@@ -207,7 +224,7 @@ const chatSlice = createSlice({
     // group events
     groupEvents(state, action) {
       const { groupId, updates } = action.payload;
-      const group = getConversation(state.conversations, groupId);
+      const group = getConversation(state.conversations, { id: groupId });
 
       if (updates.iconUrl) {
         group.iconUrl = updates.iconUrl;

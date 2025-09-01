@@ -16,7 +16,7 @@ const ConversationCard = memo(function ConversationCard({
   return (
     <ProfileCard
       user={conversation?.otherUser}
-      onClick={() => onClick(conversation._id)}
+      onClick={() => onClick(conversation._id || conversation?.clientId)}
       className={isActive ? 'active' : ''}
       imageUrl={conversation?.type === 'group' ? conversation?.iconUrl : ''}
     >

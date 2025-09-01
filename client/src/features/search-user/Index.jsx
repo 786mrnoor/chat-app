@@ -20,7 +20,7 @@ const SearchUser = ({ onClose, className }) => {
     // find if the conversation already exists
     const conversation = conversations.find((con) => con?.otherUser?._id === user._id);
     if (conversation) {
-      dispatch(setActiveConversation(conversation._id));
+      dispatch(setActiveConversation(conversation._id || conversation?.clientId));
     }
     // if the conversation is not exists make a temporary conversation with temporary ID
     else {
@@ -36,7 +36,7 @@ const SearchUser = ({ onClose, className }) => {
         lastMessageTimestamp: new Date().toISOString(),
       };
       dispatch(addConversation(newConversation));
-      dispatch(setActiveConversation(newConversation._id));
+      dispatch(setActiveConversation(newConversation.clientId));
     }
     //close the search modal
     onClose();
