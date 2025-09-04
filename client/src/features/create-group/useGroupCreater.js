@@ -28,7 +28,7 @@ export default function useGroupCreater(onClose) {
         clientId: uniqueId(),
         name: data.name,
         description: data.description,
-        members: data.members.map((m) => m._id),
+        members: data.members.map((m) => m?._id),
       });
       if (groupResponse.error) {
         throw new Error(groupResponse.message);

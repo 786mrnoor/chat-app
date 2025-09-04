@@ -1,7 +1,8 @@
 import { useSelector } from 'react-redux';
 
-import uniqueId from '@/helpers/unique-id';
 import useActiveConversation from '@/hooks/useActiveConversation';
+
+import uniqueId from '@/helpers/unique-id';
 
 export default function useOptimisticMessageCreater() {
   const user = useSelector((state) => state.user);

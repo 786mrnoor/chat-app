@@ -4,10 +4,13 @@ import { useDispatch } from 'react-redux';
 import { useSocket } from '@/features/socket/SocketContext';
 import useOptimisticMessageCreater from '@/hooks/useOptimisticMessageCreater';
 
-import preloadImage from '@/helpers/preload-image';
 import reduceImage from '@/helpers/reduce-image';
 import { getSignatureWithFormData } from '@/lib/cloudinary';
-import { sendMessage, updateLastMessageOfConversation } from '@/store/chat-slice';
+import {
+  sendMessage,
+  updateLastMessageOfConversation,
+  updateMessageFields,
+} from '@/store/chat-slice';
 
 export default function useSendAttachments() {
   const dispatch = useDispatch();
@@ -37,6 +40,8 @@ export default function useSendAttachments() {
         const optimisticMessage = createOptimisticMessage(type, message.content, {
           url: URL.createObjectURL(message.file),
         });
+        optimisticMessage.media.status = 'uploading';
+        optimisticMessage.media.progress = 0;
 
         dispatch(sendMessage(optimisticMessage));
         dispatch(updateLastMessageOfConversation(optimisticMessage));
@@ -53,27 +58,51 @@ export default function useSendAttachments() {
         formData.append('file', file);
 
         //upload the file to the cloudinary
-        const { data: response } = await axios.post(uploadUrl, formData).catch((error) => {
-          console.error(
-            `Error uploading ${optimisticMessage.name}:`,
-            error.response ? error.response.data : error.message
-          );
-        });
-
-        if (type === 'image') {
-          await preloadImage(response.secure_url).catch((error) => {
-            console.error('Error preloading image:', error);
+        let uploadError;
+        const response = await axios
+          .post(uploadUrl, formData, {
+            onUploadProgress(progressEvent) {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              let isUploaded = percentCompleted === 100;
+              dispatch(
+                updateMessageFields({
+                  clientId: optimisticMessage.clientId,
+                  media: {
+                    progress: isUploaded ? null : percentCompleted,
+                    status: isUploaded ? null : 'uploading',
+                  },
+                })
+              );
+            },
+          })
+          .catch((error) => {
+            dispatch(
+              updateMessageFields({
+                clientId: optimisticMessage.clientId,
+                media: {
+                  status: 'failed',
+                  progress: null,
+                },
+              })
+            );
+            uploadError = error;
+            console.error(
+              `Error uploading ${optimisticMessage.content || optimisticMessage.clientId}:`,
+              error.response ? error.response.data : error.message
+            );
           });
-        }
 
-        if (!socketConnection) return;
+        if (uploadError || !socketConnection) return;
+        const data = response?.data;
         socketConnection.emit('message:send', {
           ...optimisticMessage,
           media: {
-            url: response.secure_url,
-            width: response.width,
-            height: response.height,
-            publicId: response.public_id,
+            url: data.secure_url,
+            width: data.width,
+            height: data.height,
+            publicId: data.public_id,
           },
         });
       });

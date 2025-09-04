@@ -120,7 +120,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 - [ ] Dark mode
 - [ ] Message reactions
 - [ ] Retry failed uploads
-- [ ] Upload progress per file
+- [x] Upload progress per file
 - [ ] Cancel upload
 <!-- - [ ] Push notifications (web) -->
 

@@ -44,7 +44,8 @@ export default async function createGroup({ clientId, name, description, members
       });
       await group.save();
       //generate system message
-      let message = new MessageModel({
+
+      let lastMessage = new MessageModel({
         conversationId: group._id,
         senderId: user._id,
         type: 'system',
@@ -54,25 +55,29 @@ export default async function createGroup({ clientId, name, description, members
           groupName: group.name,
         },
       });
-      await message.save();
+      await lastMessage.save();
 
-      let membersJoinMessages = members.map((member) => ({
-        conversationId: group._id,
-        senderId: user._id,
-        type: 'system',
-        meta: {
-          type: 'user_added',
-          actorId: user._id,
-          targetId: member._id,
-        },
-      }));
+      // if there are members then create system join messages
+      // make it to lastMessage
+      if (members.length > 0) {
+        let membersJoinMessages = members.map((member) => ({
+          conversationId: group._id,
+          senderId: user._id,
+          type: 'system',
+          meta: {
+            type: 'user_added',
+            actorId: user._id,
+            targetId: member._id,
+          },
+        }));
 
-      membersJoinMessages = await MessageModel.insertMany(membersJoinMessages, {
-        rawResult: false,
-        lean: false,
-      });
+        membersJoinMessages = await MessageModel.insertMany(membersJoinMessages, {
+          rawResult: false,
+          lean: false,
+        });
+        lastMessage = membersJoinMessages.at(-1);
+      }
 
-      let lastMessage = membersJoinMessages.at(-1);
       group.lastMessage = lastMessage._id;
       group.lastMessageSender = user?._id;
       group.lastMessageTimestamp = lastMessage.createdAt;
@@ -84,15 +89,15 @@ export default async function createGroup({ clientId, name, description, members
       group.lastMessage = lastMessage;
       group.members = [user, ...members];
     }
-    console.log(group);
+    logger.log(group);
 
     callback({
       success: true,
       data: group,
     });
 
-    // members inclued the creator
-    const groupMembersIds = group.members.map((m) => m._id.toString());
+    // members include the creator
+    const groupMembersIds = group.members.map((m) => m?._id?.toString());
     // join members to the group room including the creator
     this.server.in(groupMembersIds).socketsJoin(group?._id?.toString());
 

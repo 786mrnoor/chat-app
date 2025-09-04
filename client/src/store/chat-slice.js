@@ -220,6 +220,21 @@ const chatSlice = createSlice({
         conversation.unseenCount -= conversation.unseenCount === 0 ? 0 : 1;
       }
     },
+    updateMessageFields(state, action) {
+      const { clientId, data = {}, media = {} } = action.payload;
+      const messageIdx = state.messages.findIndex((msg) => msg.clientId === clientId);
+      if (messageIdx === -1) return;
+
+      let prevMessage = state.messages[messageIdx];
+      state.messages[messageIdx] = {
+        ...prevMessage,
+        ...data,
+        media: {
+          ...prevMessage.media,
+          ...media,
+        },
+      };
+    },
 
     // group events
     groupEvents(state, action) {
@@ -250,6 +265,7 @@ export const {
   addMessage,
   markAsDelivered,
   markAsRead,
+  updateMessageFields,
 
   // group related actions
   groupEvents,
